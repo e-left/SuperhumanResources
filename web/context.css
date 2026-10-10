@@ -87,7 +87,7 @@ svg {
 .brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
   padding: 0 4px;
   font-family: var(--display);
   font-size: 16px;
@@ -99,17 +99,17 @@ svg {
 .brand-mark {
   position: relative;
   display: block;
-  width: 46px;
-  height: 39px;
+  width: 104px;
+  aspect-ratio: 46 / 39;
   overflow: hidden;
   flex-shrink: 0;
 }
 .brand-mark img {
   position: absolute;
-  width: 77px;
+  width: 167.4%;
   max-width: none;
-  left: -14px;
-  top: -9px;
+  left: -30.43%;
+  top: -23.08%;
 }
 .workspace-label {
   display: flex;
@@ -301,7 +301,7 @@ svg {
   margin-left: 230px;
 }
 .topbar {
-  height: 72px;
+  height: 104px;
   border-bottom: 1px solid var(--line);
   display: flex;
   align-items: center;
@@ -312,11 +312,23 @@ svg {
 .topbar-left {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 10px;
 }
 .topbar-brand {
-  font: 700 20px/1.2 var(--display);
-  letter-spacing: -0.7px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.brand-name {
+  font: 700 28px/1 var(--display);
+  letter-spacing: -1.2px;
+}
+.brand-descriptor {
+  color: var(--accent);
+  font: 700 10px/1 var(--sans);
+  letter-spacing: 4px;
+  text-transform: uppercase;
 }
 .breadcrumb {
   display: flex;
@@ -1475,6 +1487,9 @@ form label[for="subdir"] {
     padding: 0;
     justify-content: center;
   }
+  .brand-mark {
+    width: 48px;
+  }
   .workspace-label,
   .nav-caption,
   .nav-link:not(.active):not(.applicants-link):not(.studio-link),
@@ -1502,7 +1517,7 @@ form label[for="subdir"] {
     margin-left: 70px;
   }
   .topbar {
-    height: 72px;
+    height: 104px;
   }
   .studio-grid {
     gap: 14px;
@@ -1525,7 +1540,7 @@ form label[for="subdir"] {
   .sidebar {
     position: static;
     width: 100%;
-    height: 58px;
+    height: 64px;
     flex-direction: row;
     align-items: center;
     border-right: 0;
@@ -1536,9 +1551,6 @@ form label[for="subdir"] {
   .brand {
     font-size: 14px;
     gap: 10px;
-  }
-  .brand-mark {
-    font-size: 22px;
   }
   .sidebar nav {
     display: flex;
@@ -1567,8 +1579,8 @@ form label[for="subdir"] {
     flex-wrap: wrap;
     gap: 12px;
   }
-  .topbar-brand {
-    font-size: 18px;
+  .brand-name {
+    font-size: 24px;
   }
   .topbar-right {
     gap: 12px;
