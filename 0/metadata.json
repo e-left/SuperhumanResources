@@ -1,0 +1,55 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4JP6ZX2305VKSKM3S90B3KP",
+  "session_id": "01a12552-4b8d-7ac2-8d51-ec8610192bf0",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T10:37:20.654841Z",
+  "branch": "feat/flatpal-reference",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "demo-proj/mobile/.env.example",
+    "demo-proj/mobile/app.json",
+    "demo-proj/mobile/app/_layout.tsx",
+    "demo-proj/mobile/app/chat/[id].tsx",
+    "demo-proj/mobile/app/discover.tsx",
+    "demo-proj/mobile/app/index.tsx",
+    "demo-proj/mobile/app/matches.tsx",
+    "demo-proj/mobile/app/profile.tsx",
+    "demo-proj/mobile/components/swipe-card.tsx",
+    "demo-proj/mobile/components/ui.tsx",
+    "demo-proj/mobile/expo-env.d.ts",
+    "demo-proj/mobile/lib/api.ts",
+    "demo-proj/mobile/lib/query.ts",
+    "demo-proj/mobile/lib/session.tsx",
+    "demo-proj/mobile/package.json",
+    "demo-proj/mobile/tsconfig.json"
+  ],
+  "agent": "Codex",
+  "model": "gpt-6.1-sol",
+  "turn_id": "47f284e27755",
+  "checkpoint_transcript_start": 231,
+  "transcript_lines_at_start": 231,
+  "compact_transcript_start": 25,
+  "token_usage": {
+    "input_tokens": 9781,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 140544,
+    "output_tokens": 10364,
+    "api_call_count": 2
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-10T10:37:20.636906Z",
+    "agent_lines": 403,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 403,
+    "total_lines_changed": 403,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4JP6ZX2305VKSKM3S90B3KP",
+  "strategy": "manual-commit",
+  "branch": "feat/flatpal-reference",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "demo-proj/mobile/.env.example",
+    "demo-proj/mobile/app.json",
+    "demo-proj/mobile/app/_layout.tsx",
+    "demo-proj/mobile/app/chat/[id].tsx",
+    "demo-proj/mobile/app/discover.tsx",
+    "demo-proj/mobile/app/index.tsx",
+    "demo-proj/mobile/app/matches.tsx",
+    "demo-proj/mobile/app/profile.tsx",
+    "demo-proj/mobile/components/swipe-card.tsx",
+    "demo-proj/mobile/components/ui.tsx",
+    "demo-proj/mobile/expo-env.d.ts",
+    "demo-proj/mobile/lib/api.ts",
+    "demo-proj/mobile/lib/query.ts",
+    "demo-proj/mobile/lib/session.tsx",
+    "demo-proj/mobile/package.json",
+    "demo-proj/mobile/tsconfig.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 9781,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 140544,
+    "output_tokens": 10364,
+    "api_call_count": 2
+  }
+}
