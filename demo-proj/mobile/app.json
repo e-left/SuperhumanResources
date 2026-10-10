@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "FlatPal",
+    "slug": "flatpal",
+    "scheme": "flatpal",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "FlatPal uses your chosen profile photo."
+        }
+      ],
+      "expo-notifications"
+    ]
+  }
+}
