@@ -1,0 +1,23 @@
+name: flatpal-tests
+services:
+  postgres:
+    image: postgis/postgis:16-3.5
+    environment:
+      POSTGRES_DB: flatpal_test
+      POSTGRES_USER: flatpal
+      POSTGRES_PASSWORD: local-demo-only
+    ports: ["127.0.0.1:54330:5432"]
+    tmpfs: ["/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flatpal -d flatpal_test"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  redis:
+    image: redis:7.4.2-alpine
+    ports: ["127.0.0.1:63800:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10

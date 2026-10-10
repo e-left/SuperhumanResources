@@ -1,0 +1,16 @@
+{
+  "name": "flatpal",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "api": "npm --prefix api run start",
+    "mobile": "npm --prefix mobile start",
+    "db:migrate": "npm --prefix api run db:migrate",
+    "db:seed": "npm --prefix api run db:seed",
+    "check": "npm --prefix api run typecheck && npm --prefix mobile run typecheck",
+    "test": "npm --prefix api test"
+  },
+  "engines": {
+    "node": ">=22.22.3 <23"
+  }
+}

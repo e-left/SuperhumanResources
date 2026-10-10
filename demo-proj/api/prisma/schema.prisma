@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model Profile {
+  id           String   @id @db.Uuid
+  name         String
+  bio          String
+  budgetMin    Int
+  budgetMax    Int
+  area         String
+  moveIn       DateTime @db.Date
+  smoking      String
+  pets         String
+  sleep        String
+  photoPath    String?
+  pushToken    String?
+  location     Unsupported("geography(Point,4326)")?
+  createdAt    DateTime @default(now())
+}
+model Swipe {
+  actorId  String @db.Uuid
+  targetId String @db.Uuid
+  decision String
+  @@id([actorId, targetId])
+}
+model Match {
+  id        String   @id @default(uuid()) @db.Uuid
+  lowId     String   @db.Uuid
+  highId    String   @db.Uuid
+  createdAt DateTime @default(now())
+  @@unique([lowId, highId])
+  @@index([highId])
+}
+model Block {
+  actorId  String @db.Uuid
+  targetId String @db.Uuid
+  @@id([actorId, targetId])
+  @@index([targetId])
+}
+model Notification {
+  id          String   @id @default(uuid()) @db.Uuid
+  matchId     String   @db.Uuid
+  recipientId String   @db.Uuid
+  status      String   @default("pending")
+  attempts    Int      @default(0)
+  ticketId    String?
+  lastError   String?
+  createdAt   DateTime @default(now())
+  @@unique([matchId, recipientId])
+  @@index([status, createdAt])
+}
+model FixtureMessage {
+  id        String   @id @default(uuid()) @db.Uuid
+  matchId   String   @db.Uuid
+  senderId  String   @db.Uuid
+  text      String
+  createdAt DateTime @default(now())
+  @@index([matchId, createdAt])
+}
