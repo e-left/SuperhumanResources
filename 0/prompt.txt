@@ -39,3 +39,11 @@ ok, find me the most up to date model i should use. i think 2.5 is a bit too old
 ---
 
 ok. Is the @.env file ready?
+
+---
+
+ok. go ahead test whatever u can test. Create example questions & profile to run it after initial testing. I need this to work
+
+---
+
+Claude, we have relatively limited gradium tokens. Please be careful with it. Continue the test. Keep it relatively short (interview around 5 mins or less)
