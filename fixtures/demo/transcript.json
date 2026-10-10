@@ -3,6 +3,7 @@
   "candidate_name": "Alex Meier",
   "started_at": "2026-10-10T13:00:00+00:00",
   "ended_at": "2026-10-10T13:04:10+00:00",
+  "ended_reason": "completed",
   "turns": [
     {"speaker": "agent", "question_id": null, "followup": false, "text": "Hi Alex, I'm Harper. I have three questions about the codebase you would work on.", "t": 0.0},
     {"speaker": "candidate", "question_id": null, "followup": false, "text": "Hi Harper, sounds good.", "t": 6.2},

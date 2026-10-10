@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Interview report — internal</title>
+  <style>
+    :root {
+      --bg: #f6f7f9; --card: #ffffff; --border: #e3e6eb; --fg: #16181d; --muted: #5f6673;
+      --accent: #2f6fed; --good: #17804d; --good-bg: #e8f6ee; --bad: #c0392f; --bad-bg: #fcebe9;
+      --warn: #9a6500; --warn-bg: #fdf3dc; --chip: #eef0f4;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1115; --card: #171a21; --border: #272b35; --fg: #e8eaed; --muted: #9299a6;
+        --accent: #6c9bff; --good: #4cc98a; --good-bg: #12281d; --bad: #f0746b; --bad-bg: #2c1614;
+        --warn: #e3b04b; --warn-bg: #2a2110; --chip: #232732;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--fg);
+      font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    main { max-width: 860px; margin: 0 auto; padding: 40px 20px 72px; }
+    h1 { font-size: 1.75rem; line-height: 1.2; margin: 0; letter-spacing: -.01em; }
+    h2 { font-size: 1.05rem; margin: 40px 0 12px; letter-spacing: -.005em; }
+    h3 {
+      font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .07em;
+      color: var(--muted); margin: 0 0 8px;
+    }
+    p { margin: 0 0 10px; }
+    p:last-child { margin-bottom: 0; }
+    ul { margin: 0; padding-left: 18px; }
+    li { margin-bottom: 6px; }
+    li:last-child { margin-bottom: 0; }
+    .muted { color: var(--muted); }
+    .small { font-size: .85rem; }
+    .eyebrow { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); margin-bottom: 6px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 22px 24px; }
+    .card + .card { margin-top: 14px; }
+    .stack > * + * { margin-top: 18px; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 32px; }
+    @media (max-width: 640px) { .cols { grid-template-columns: 1fr; } }
+
+    .hero { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; margin-top: 22px; }
+    .advance { --tone: var(--good); --tone-bg: var(--good-bg); }
+    .reject { --tone: var(--bad); --tone-bg: var(--bad-bg); }
+    .decision {
+      display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; padding: 6px 14px;
+      border-radius: 999px; font-weight: 600; color: var(--tone); background: var(--tone-bg);
+    }
+    .decision::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--tone); }
+    .scorebox { text-align: right; min-width: 200px; }
+    .score { font-size: 3rem; font-weight: 700; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--tone); }
+    .score span { font-size: 1.1rem; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+    .bar { position: relative; height: 6px; border-radius: 3px; background: var(--chip); margin: 12px 0 6px; }
+    .bar i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: var(--tone); }
+    .bar b { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--fg); opacity: .55; }
+
+    .notice { border-left: 3px solid var(--tone); background: var(--tone-bg); border-radius: 8px; padding: 12px 16px; margin-top: 14px; }
+    .notice.warn { --tone: var(--warn); --tone-bg: var(--warn-bg); }
+    .notice.bad { --tone: var(--bad); --tone-bg: var(--bad-bg); }
+    .notice strong { color: var(--tone); }
+
+    .qhead { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+    .qid { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+    .qscore { font-size: 1.35rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .qscore span { font-size: .85rem; font-weight: 500; color: var(--muted); }
+    .high { color: var(--good); } .mid { color: var(--warn); } .low { color: var(--bad); }
+    .qtext { font-weight: 600; font-size: 1rem; margin: 4px 0 10px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .chip { font-size: .75rem; padding: 2px 10px; border-radius: 999px; background: var(--chip); color: var(--muted); }
+    .chip.warn { background: var(--warn-bg); color: var(--warn); }
+    .chip.bad { background: var(--bad-bg); color: var(--bad); }
+    blockquote { margin: 0 0 8px; padding: 2px 0 2px 14px; border-left: 3px solid var(--border); color: var(--muted); }
+    blockquote:last-child { margin-bottom: 0; }
+
+    details { margin-top: 14px; }
+    summary { cursor: pointer; font-weight: 600; }
+    .turn { display: grid; grid-template-columns: 52px 96px 1fr; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border); }
+    .turn:first-child { border-top: 0; }
+    .turn .who { font-weight: 600; }
+    .turn .tag { display: block; font-size: .72rem; font-weight: 400; color: var(--muted); }
+    .turn time { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    .actions { display: flex; gap: 10px; }
+    button {
+      background: var(--card); color: var(--fg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 8px 14px; font: inherit; font-weight: 600; cursor: pointer;
+    }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    button:disabled { opacity: .5; cursor: default; }
+    footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border); }
+    .topline { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+
+    @media print {
+      :root {
+        --bg: #fff; --card: #fff; --border: #d9dce2; --fg: #000; --muted: #444; --chip: #eee;
+        --good: #17804d; --good-bg: #e8f6ee; --bad: #c0392f; --bad-bg: #fcebe9; --warn: #9a6500; --warn-bg: #fdf3dc;
+      }
+      body { font-size: 11pt; }
+      main { padding: 0; max-width: none; }
+      .no-print { display: none !important; }
+      .card { break-inside: avoid; }
+      h2 { break-after: avoid; }
+      details > summary { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main id="root"><p class="muted">Loading…</p></main>
+
+  <script>
+    const sessionId = new URLSearchParams(location.search).get('session') || 'demo';
+    const root = document.getElementById('root');
+    const ADVANCE_MIN = 60;
+    const ENDINGS = {
+      completed: 'Ran to the end',
+      time_limit: 'Cut short by the time limit',
+      disconnected: 'Connection dropped',
+      stopped: 'Stopped early',
+    };
+
+    // All report text is set through textContent: it comes from an LLM and a candidate.
+    function el(tag, props = {}, children = []) {
+      const node = document.createElement(tag);
+      for (const [key, value] of Object.entries(props)) {
+        if (key === 'class') node.className = value;
+        else if (key === 'style') node.style.cssText = value;
+        else node[key] = value;
+      }
+      for (const child of [].concat(children)) if (child) node.append(child);
+      return node;
+    }
+    const band = (score) => (score >= 80 ? 'high' : score >= ADVANCE_MIN ? 'mid' : 'low');
+    const clock = (seconds) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
+
+    function list(title, items, emptyText) {
+      if (!items.length && !emptyText) return null;
+      return el('div', {}, [
+        el('h3', { textContent: title }),
+        items.length
+          ? el('ul', {}, items.map((text) => el('li', { textContent: text })))
+          : el('p', { class: 'muted', textContent: emptyText }),
+      ]);
+    }
+
+    function hero(r) {
+      const advance = r.decision === 'advance';
+      const date = new Date(r.generated_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+      const facts = [
+        date,
+        r.duration_s != null ? `${clock(r.duration_s)} interview` : null,
+        ENDINGS[r.ended_reason] || null,
+      ].filter(Boolean).join(' · ');
+      return el('div', { class: `hero ${advance ? 'advance' : 'reject'}` }, [
+        el('div', {}, [
+          el('h1', { textContent: r.candidate_name }),
+          el('p', { class: 'muted small', style: 'margin-top:6px', textContent: facts }),
+          el('div', { class: 'decision', textContent: advance ? 'Advance to the next round' : 'Not moving forward' }),
+        ]),
+        el('div', { class: 'scorebox' }, [
+          el('div', { class: 'score' }, [String(r.overall_score), el('span', { textContent: ' / 100' })]),
+          el('div', { class: 'bar' }, [
+            el('i', { style: `width:${r.overall_score}%` }),
+            el('b', { style: `left:${ADVANCE_MIN}%` }),
+          ]),
+          el('div', { class: 'muted small', textContent: `Advance bar: ${ADVANCE_MIN}` }),
+        ]),
+      ]);
+    }
+
+    function notices(r) {
+      const items = [];
+      if (!r.interview_complete) {
+        items.push(el('div', { class: 'notice bad' }, [
+          el('strong', { textContent: 'Incomplete interview. ' }),
+          'Questions without an answer score 0 and weigh heavily on the result.',
+        ]));
+      }
+      if (r.needs_human_review) {
+        items.push(el('div', { class: 'notice warn' }, [
+          el('strong', { textContent: 'Check before relying on this report' }),
+          el('ul', { class: 'small', style: 'margin-top:6px' }, r.review_reasons.map((text) => el('li', { textContent: text }))),
+        ]));
+      }
+      return items;
+    }
+
+    function decisionSection(r) {
+      const advance = r.decision === 'advance';
+      const lists = advance
+        ? el('div', { class: 'cols' }, [
+            list('Strengths', r.strengths, 'None recorded.'),
+            list('Cover in the next interviews', r.next_interview_focus, 'Nothing specific.'),
+          ])
+        : el('div', { class: r.strengths.length ? 'cols' : '' }, [
+            list('Reasons', r.rejection_reasons, 'None recorded.'),
+            list('Strengths noted', r.strengths),
+          ]);
+      return [
+        el('h2', { textContent: advance ? 'Why the candidate advances' : 'Why the candidate is not moving forward' }),
+        el('section', { class: 'card stack' }, [
+          el('p', { textContent: r.summary }),
+          lists,
+          el('div', {}, [el('h3', { textContent: 'How the score came about' }), el('p', { textContent: r.reasoning })]),
+        ]),
+      ];
+    }
+
+    function questionCard(q, index) {
+      const chips = [];
+      if (q.status !== 'answered') chips.push(el('span', { class: 'chip bad', textContent: 'Not answered' }));
+      if (q.followup_asked) chips.push(el('span', { class: 'chip', textContent: 'Follow-up asked' }));
+      if (q.second_chance_given) chips.push(el('span', { class: 'chip warn', textContent: q.hint_given ? 'Second chance with hint' : 'Second chance' }));
+      if (q.score_before_cap != null) chips.push(el('span', { class: 'chip warn', textContent: `Capped from ${q.score_before_cap}` }));
+      return el('section', { class: 'card' }, [
+        el('div', { class: 'qhead' }, [
+          el('span', { class: 'qid', textContent: `Question ${index + 1}` }),
+          el('span', { class: `qscore ${band(q.score)}` }, [String(q.score), el('span', { textContent: ' / 100' })]),
+        ]),
+        el('p', { class: 'qtext', textContent: q.question }),
+        chips.length ? el('div', { class: 'chips' }, chips) : null,
+        el('div', { class: 'stack' }, [
+          el('p', { textContent: q.reasoning }),
+          (q.covered_points.length || q.missed_points.length) ? el('div', { class: 'cols' }, [
+            list('Covered', q.covered_points, 'Nothing from the reference answer.'),
+            list('Missed', q.missed_points, 'Nothing significant.'),
+          ]) : null,
+          (q.strengths.length || q.gaps.length) ? el('div', { class: 'cols' }, [
+            list('Strengths', q.strengths, 'None shown.'),
+            list('Gaps', q.gaps, 'None shown.'),
+          ]) : null,
+          q.evidence.length ? el('div', {}, [
+            el('h3', { textContent: 'In the candidate’s words' }),
+            ...q.evidence.map((quote) => el('blockquote', { textContent: `“${quote}”` })),
+          ]) : null,
+        ]),
+      ]);
+    }
+
+    function observations(r) {
+      const a = r.profile_alignment;
+      return [
+        el('h2', { textContent: 'Other observations' }),
+        el('section', { class: 'card stack' }, [
+          r.communication ? el('div', {}, [el('h3', { textContent: 'Communication (not scored)' }), el('p', { textContent: r.communication })]) : null,
+          el('div', { class: 'cols' }, [
+            list('Profile claims the interview confirmed', a.confirmed, 'Nothing in the interview bears on the profile.'),
+            list('Profile claims the interview contradicted', a.contradicted, 'None.'),
+          ]),
+          list('Red flags', r.red_flags, 'None.'),
+        ]),
+      ];
+    }
+
+    function transcriptSection(t) {
+      if (!t) return [];
+      const tags = (turn) => [
+        turn.question_id ? turn.question_id.toUpperCase() : null,
+        turn.followup ? 'follow-up' : null,
+        turn.second_chance ? (turn.hint ? 'second chance, hint' : 'second chance') : null,
+      ].filter(Boolean).join(' · ');
+      return [
+        el('h2', { textContent: 'Transcript' }),
+        el('section', { class: 'card' }, [
+          el('details', { style: 'margin:0' }, [
+            el('summary', { textContent: `Full transcript (${t.turns.length} turns)` }),
+            el('div', { style: 'margin-top:12px' }, t.turns.map((turn) => el('div', { class: 'turn' }, [
+              el('time', { class: 'small', textContent: clock(turn.t) }),
+              el('div', { class: 'who small' }, [
+                turn.speaker === 'agent' ? 'Interviewer' : 'Candidate',
+                el('span', { class: 'tag', textContent: tags(turn) }),
+              ]),
+              el('div', { textContent: turn.text }),
+            ]))),
+          ]),
+        ]),
+      ];
+    }
+
+    function render(r, t) {
+      document.title = `${r.candidate_name} — interview report`;
+      const rerun = el('button', { textContent: 'Re-run evaluation' });
+      rerun.addEventListener('click', () => { if (confirm('Run the evaluation again? This replaces the current report.')) runEvaluation(); });
+      const print = el('button', { textContent: 'Print / save as PDF' });
+      print.addEventListener('click', () => {
+        document.querySelectorAll('details').forEach((d) => { d.open = true; });
+        window.print();
+      });
+      root.replaceChildren(
+        el('div', { class: 'topline' }, [
+          el('div', { class: 'eyebrow', style: 'margin:0', textContent: 'Interview report · internal, do not share with the candidate' }),
+          el('div', { class: 'actions no-print' }, [print, rerun]),
+        ]),
+        hero(r),
+        ...notices(r),
+        ...decisionSection(r),
+        el('h2', { textContent: 'Question by question' }),
+        ...r.per_question.map(questionCard),
+        ...observations(r),
+        ...transcriptSection(t),
+        el('footer', { class: 'muted small' }, [
+          el('p', { textContent: 'This report supports a hiring decision; it does not make one. It grades a single short voice interview against reference answers, and a person should review it before the candidate is told anything.' }),
+          el('p', { textContent: `Session ${r.session_id} · generated ${new Date(r.generated_at).toLocaleString()} · ${r.model}` }),
+        ]),
+      );
+    }
+
+    async function fetchTranscript() {
+      try {
+        const response = await fetch(`/sessions/${encodeURIComponent(sessionId)}/transcript`);
+        return response.ok ? await response.json() : null;
+      } catch { return null; }
+    }
+
+    async function runEvaluation() {
+      root.replaceChildren(el('p', { class: 'muted', textContent: 'Evaluating the interview. This takes about twenty seconds…' }));
+      try {
+        const response = await fetch(`/sessions/${encodeURIComponent(sessionId)}/evaluate`, { method: 'POST' });
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.detail || 'Evaluation failed');
+        render(body, await fetchTranscript());
+      } catch (error) { showMessage(error.message); }
+    }
+
+    function showMessage(message) {
+      const button = el('button', { class: 'primary', textContent: 'Run evaluation' });
+      button.addEventListener('click', runEvaluation);
+      root.replaceChildren(
+        el('div', { class: 'eyebrow', textContent: 'Interview report · internal' }),
+        el('section', { class: 'card stack' }, [el('p', { textContent: message }), button]),
+      );
+    }
+
+    async function load() {
+      const response = await fetch(`/sessions/${encodeURIComponent(sessionId)}/report`);
+      if (response.status === 404) return showMessage(`There is no report yet for session “${sessionId}”.`);
+      if (!response.ok) throw new Error('Could not load the report.');
+      render(await response.json(), await fetchTranscript());
+    }
+
+    load().catch((error) => showMessage(error.message));
+  </script>
+</body>
+</html>

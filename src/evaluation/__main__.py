@@ -18,7 +18,7 @@ def main() -> int:
     except (evaluator.EvaluationError, loader.SessionError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
-    print(f"{report.candidate_name}: {report.overall_score}/100, {report.recommendation}")
+    print(f"{report.candidate_name}: {report.overall_score}/100, {report.decision}")
     for question in report.per_question:
         print(f"  {question.question_id}: {question.score} ({question.status})")
     for reason in report.review_reasons:

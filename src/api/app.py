@@ -5,13 +5,13 @@ import pathlib
 
 import dotenv
 import fastapi
+import fastapi.responses
 import gradbot
 
-from src.api import llm_proxy
 from src.evaluation import evaluator
-from src.interview import loader
+from src.interview import llm_proxy, loader
 from src.interview.session import run_interview
-from src.shared.models import Report
+from src.shared.models import Report, Transcript
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 dotenv.load_dotenv(ROOT / ".env")
@@ -50,6 +50,20 @@ def report(session_id: str) -> Report:
     if found is None:
         raise fastapi.HTTPException(status_code=404, detail="no report yet")
     return found
+
+
+@app.get("/sessions/{session_id}/transcript")
+def transcript(session_id: str) -> Transcript:
+    try:
+        return evaluator.load_transcript(session_id)
+    except (loader.SessionError, evaluator.EvaluationError) as exc:
+        raise fastapi.HTTPException(status_code=404, detail=str(exc))
+
+
+# Internal, for recruiters. Deliberately not under web/, which is the candidate's page.
+@app.get("/internal/report")
+def report_page():
+    return fastapi.responses.FileResponse(ROOT / "internal" / "report.html")
 
 
 # Serves web/index.html at / and Gradbot's audio worklet under /static/js.

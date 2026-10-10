@@ -26,13 +26,12 @@
     @keyframes pulse { 50% { box-shadow: 0 0 0 18px rgba(229, 72, 77, 0); } 0% { box-shadow: 0 0 0 0 rgba(229, 72, 77, .5); } }
     #status { margin-top: 28px; min-height: 1.5em; color: var(--muted); }
     #status.error { color: var(--danger); }
-    #status a { color: var(--accent); }
   </style>
 </head>
 <body>
   <main>
     <h1>Technical interview</h1>
-    <p>Voice only. Use a headset if you can.</p>
+    <p>Voice only, 15 minutes at most. Use a headset if you can.</p>
     <button id="btn">Start</button>
     <div id="status"></div>
   </main>
@@ -49,14 +48,6 @@
     function setStatus(text, isError = false) {
       statusEl.textContent = text;
       statusEl.className = isError ? 'error' : '';
-    }
-
-    function showReportLink() {
-      // The transcript is already saved when this event arrives; the report page runs the evaluation.
-      const link = document.createElement('a');
-      link.href = `static/report.html?session=${encodeURIComponent(sessionId)}&run=1`;
-      link.textContent = 'Evaluate and view report';
-      statusEl.append(document.createElement('br'), link);
     }
 
     function teardown() {
@@ -81,8 +72,12 @@
           if (type === 'interview_finished') {
             finished = true;
             live = false;  // stop sending mic audio; let the goodbye play out
-            setStatus(msg.completed ? 'Interview finished. Thank you.' : 'Interview ended.');
-            showReportLink();
+            const ENDINGS = {
+              completed: 'Interview finished. Thank you, the team will be in touch.',
+              time_limit: 'We have reached the time limit. Thank you, the team will be in touch.',
+              stopped: 'Interview ended.',
+            };
+            setStatus(ENDINGS[msg.reason] || 'Interview ended.');
           }
         },
         onError: (error) => setStatus(error.message, true),

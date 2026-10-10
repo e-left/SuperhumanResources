@@ -31,7 +31,7 @@ Implication: the demo is live. A working end-to-end path beats any single polish
 | - | - |
 | Language | Python 3.12+ (Gradbot requirement) |
 | Backend | FastAPI, one process |
-| Frontend | Single thin browser page: mic capture, audio playback, final report. The interview itself is voice only, no question text on screen |
+| Frontend | Two pages: the candidate's interview page (voice only, no question text, no results) and an internal report page for recruiters |
 | LLM | Gemini for all three agents. Model id in `GEMINI_MODEL` env var, currently `gemini-3.8-flash` |
 | Voice | Gradium. Start with Gradbot (`pip install gradbot`), fall back to raw SDK (`pip install gradium`) |
 | Code input | Public GitHub repo URL, shallow clone |
@@ -66,7 +66,7 @@ GitHub URL
 [evaluation] Gemini scores each answer against its reference     data/<session>/report.json
    │
    ▼
-Report page: overall score, per-question scores, evidence quotes, recommendation
+Internal report page: decision (advance / reject), score, reasons, per-question detail, transcript
 ```
 
 Proposed layout:
@@ -74,11 +74,12 @@ Proposed layout:
 ```
 src/
   analysis/     repo clone, file selection, question generation
-  interview/    loader (inputs), prompt, flow (tool-driven state), recorder (transcript), session (voice loop)
+  interview/    loader (inputs), prompt, flow (tool-driven state), llm_proxy (Gemini + tools), recorder (transcript), session (voice loop)
   evaluation/   prompt, evaluator (Gemini judgement + code-side scoring rules), CLI
   api/          FastAPI app, routes, session store
   shared/       pydantic models for the contracts below, Gemini client
-web/            index.html + JS (mic, playback, report view)
+web/            index.html: the candidate's page (mic, playback)
+internal/       report.html: the recruiter's report page
 data/           runtime session files (gitignored)
 fixtures/       sample sessions: `demo` (fictional order service, includes a transcript.json) and `example` (questions about this repo's own code)
 tests/          pytest unit tests
@@ -125,21 +126,24 @@ Exactly 3 docs. `# Question`, `# Answer` and `# Context` are required and non-em
   "candidate_name": "string",
   "started_at": "ISO-8601",
   "ended_at": "ISO-8601",
+  "ended_reason": "completed | time_limit | disconnected | stopped",
   "turns": [
     {"speaker": "agent", "question_id": null, "text": "intro...", "t": 0.0},
     {"speaker": "agent", "question_id": "q1", "text": "...", "t": 4.1},
     {"speaker": "candidate", "question_id": "q1", "text": "...", "t": 6.4},
-    {"speaker": "agent", "question_id": "q1", "followup": true, "text": "...", "t": 41.0},
+    {"speaker": "agent", "question_id": "q1", "second_chance": true, "hint": true, "text": "...", "t": 30.0},
+    {"speaker": "candidate", "question_id": "q1", "second_chance": true, "hint": true, "text": "...", "t": 36.5},
+    {"speaker": "agent", "question_id": "q1", "followup": true, "interrupted": true, "heard": "the part that was spoken", "text": "the full wording", "t": 41.0},
     {"speaker": "candidate", "question_id": "q1", "followup": true, "text": "...", "t": 46.2}
   ]
 }
 ```
 
-Every turn is tagged with the question it belongs to; introduction and closing turns have `question_id: null`. The transcript holds only what was said: no reference answers, context or scores. Follow-ups keep the parent `question_id` and set `"followup": true` (optional, defaults to false), so the evaluator can match them to `followup.answer`.
+Every turn is tagged with the question it belongs to; introduction and closing turns have `question_id: null`. `followup`, `second_chance` and `hint` are optional and default to false. Follow-ups keep the parent `question_id`. `second_chance` marks the interviewer's "try again" and the candidate's second attempt, until the next question or follow-up; `hint` is set when that second chance came with a hint. `interrupted` marks an interviewer turn that was cut off: `text` is then the full wording it meant to say and `heard` the part that was actually spoken. `ended_reason` is `null` while the interview is in progress: the file is rewritten every time a new turn starts, so a crash loses at most the turn in progress. The transcript holds only what was said: no reference answers, context or scores.
 
-### Report (evaluation → UI)
+### Report (evaluation → internal report page)
 
-Written to `data/<session>/report.json`. Models: `Report` and `QuestionReport` in `src/shared/models.py`.
+Written to `data/<session>/report.json`. Internal: recruiters only, never shown to the candidate. Models: `Report` and `QuestionReport` in `src/shared/models.py`.
 
 ```json
 {
@@ -148,10 +152,16 @@ Written to `data/<session>/report.json`. Models: `Report` and `QuestionReport` i
   "generated_at": "ISO-8601",
   "model": "gemini model id",
   "overall_score": 0,
-  "recommendation": "strong_hire | hire | no_hire",
-  "summary": "short paragraph",
-  "reasoning": "why the scores came out as they did",
+  "decision": "advance | reject",
+  "borderline": false,
+  "summary": "why, in three or four sentences",
+  "reasoning": "how the question scores produced the overall score",
+  "strengths": ["..."],
+  "next_interview_focus": ["advance only: what later interviews should cover"],
+  "rejection_reasons": ["reject only: specific reasons"],
   "interview_complete": true,
+  "ended_reason": "completed | time_limit | disconnected | stopped",
+  "duration_s": 0,
   "needs_human_review": false,
   "review_reasons": ["..."],
   "per_question": [
@@ -160,7 +170,11 @@ Written to `data/<session>/report.json`. Models: `Report` and `QuestionReport` i
       "question": "the question as asked",
       "status": "answered | not_answered",
       "followup_asked": true,
+      "second_chance_given": false,
+      "hint_given": false,
       "score": 0,
+      "score_before_cap": null,
+      "score_runs": [0, 0, 0],
       "reasoning": "...",
       "covered_points": ["..."],
       "missed_points": ["..."],
@@ -170,13 +184,23 @@ Written to `data/<session>/report.json`. Models: `Report` and `QuestionReport` i
     }
   ],
   "profile_alignment": {"confirmed": ["..."], "contradicted": ["..."]},
-  "red_flags": ["..."],
-  "suggested_next_steps": ["topics to probe in a human round"],
+  "red_flags": ["conduct or integrity concerns, not weak answers"],
   "communication": "one or two sentences, not scored"
 }
 ```
 
-Scores are 0 to 100. `overall_score` is the hiring score: the mean of the three question scores, computed in code. `recommendation` comes from fixed thresholds in code: 80 and above `strong_hire`, 60 and above `hire`, otherwise `no_hire`. A question's score covers the main answer and, if it was asked, the follow-up. A question with no answer scores 0 and makes `interview_complete` false. Evidence quotes that do not appear in the candidate's turns are removed. `needs_human_review` is set when a question was not answered, a quote was removed, or a question is scored without a verified quote. The report is advisory; a person makes the hiring decision.
+Rules, all applied in code (`assess()` and `finalize()` in `src/evaluation/evaluator.py`):
+
+- Scores are 0 to 100. Grading runs `JUDGE_RUNS = 3` times in parallel; each question takes the median run (its score, reasoning and quotes together), and `score_runs` lists every run's score. `overall_score` is the mean of the three question scores.
+- `borderline` is true when the overall score is within 5 points of the bar; the decision is still made, and a person should confirm it.
+- `decision` is `advance` at `ADVANCE_MIN = 60` or above, otherwise `reject`. One constant for now, to be made configurable.
+- An advance report carries `strengths` and `next_interview_focus`; a reject report carries `rejection_reasons` (and at most two `strengths`). The list that does not apply is always empty.
+- A question that needed a second chance is capped at 70, or at 55 if a hint was given; `score_before_cap` keeps the evaluator's original score when the cap lowered it.
+- A question with no answer scores 0 and makes `interview_complete` false.
+- Evidence quotes that do not appear in the candidate's turns are removed.
+- `needs_human_review` is set when a question was not answered, a quote was removed, a question is scored without a verified quote, a red flag was raised, the interview did not end normally, the result is borderline, the grading runs differ by more than 20 points on a question, or the interviewer was interrupted while asking a question.
+
+The report supports a decision; a person reviews it before the candidate is told anything.
 
 ### HTTP
 
@@ -184,12 +208,13 @@ Scores are 0 to 100. `overall_score` is the hiring score: the mean of the three 
 | - | - | - |
 | `POST /analyze` `{repo_url, role}` | Teammate | writes `questions/q1..q3.md`, returns the parsed questions |
 | `GET /sessions/{id}/questions` | Teammate | returns the parsed questions |
-| `WS /sessions/{id}/interview` | Fotis | audio in/out, writes `transcript.json` on end, disconnect or time cap. Inputs are read from `data/<id>/`, falling back to `fixtures/<id>/` |
-| `GET /?session=<id>` | Fotis | interview page (defaults to `demo`) |
-| `POST /llm/chat/completions` | Fotis | internal: Gradbot to Gemini proxy, see section 7 |
-| `POST /sessions/{id}/evaluate` | Fotis | runs the evaluation, returns Report, writes `report.json`. Transcript is read from `data/<id>/`, falling back to `fixtures/<id>/` |
+| `WS /sessions/{id}/interview` | Fotis | audio in/out, writes `transcript.json` on end, disconnect or time limit, then starts the evaluation. Inputs are read from `data/<id>/`, falling back to `fixtures/<id>/` |
+| `GET /?session=<id>` | Fotis | candidate's interview page (defaults to `demo`). Ends with a thank-you, no results |
+| `POST /llm/s/{token}/chat/completions` | Fotis | internal: per-session LLM endpoint for Gradbot, see section 7 |
+| `POST /sessions/{id}/evaluate` | Fotis | runs the evaluation, returns Report, writes `report.json`. Also runs automatically when an interview ends. Transcript is read from `data/<id>/`, falling back to `fixtures/<id>/` |
 | `GET /sessions/{id}/report` | Fotis | returns the saved Report, 404 until one exists |
-| `GET /static/report.html?session=<id>` | Fotis | report page. Add `&run=1` to run the evaluation first; the interview page links here when it finishes |
+| `GET /sessions/{id}/transcript` | Fotis | returns the Transcript (used by the report page) |
+| `GET /internal/report?session=<id>` | Fotis | internal report page for recruiters (`internal/report.html`). The candidate page never links to it. No access control yet: the platform that creates interview links will add it |
 
 ## 7. Gradium notes
 
@@ -199,10 +224,9 @@ Docs: https://docs.gradium.ai (index for agents: https://docs.gradium.ai/llms.tx
 - **Gradbot** is Gradium's open-source voice agent loop, built for hackathons: streaming audio, VAD, turn-taking, interruptions, tool calls, OpenAI-compatible LLM. Repo: https://github.com/gradium-ai/gradbot
 
   - Needs Python 3.12+. Flagship English voices include Harper, Tilly, Declan (there is no "Emma"); we use `gradbot.flagship_voice("Harper")`.
-  - Gemini does **not** work when Gradbot calls it directly: Gemini's OpenAI-compatible stream omits `index` on tool calls (Gradbot drops them) and Gemini 3 needs its thought signatures echoed back. So Gradbot's `llm_base_url` points at our own proxy, `POST /llm/chat/completions` in `src/api/llm_proxy.py`, which fixes both, sets `reasoning_effort` to `low` (override with `GEMINI_REASONING_EFFORT`) and retries 429/503. Also: no trailing slash on the base URL, Gradbot appends `/chat/completions`.
-  - Verified on 10 Oct with `gemini-3.8-flash`: full 3-question voice interview in about 2 minutes, replies start roughly 3 to 4 seconds after the candidate stops.
-  - `gradbot.websocket.handle_session` forwards transcripts to the browser but has no server-side hook, so `src/interview/session.py` runs its own loop on `gradbot.run` and records `stt_text` (candidate) and `tts_text` (agent) messages.
-  - `gradbot.routes.setup(app, static_dir="web")` serves the page and the browser audio worklet (`/static/js/`), so mic capture and playback are not hand-written.
+  - Gemini does **not** work when Gradbot calls it directly. Gemini's OpenAI-compatible stream omits `index` on tool calls (Gradbot drops them), Gemini 3 needs its thought signatures echoed back, and Gradbot cuts off whatever the model was saying when a tool call arrives. So Gradbot never talks to Gemini: each session gets its own endpoint on our proxy, `POST /llm/s/{token}/chat/completions` in `src/interview/llm_proxy.py`.
+  - The proxy owns the real Gemini conversation for the session and runs the interviewer's tool calls itself against that session's `InterviewFlow`. Gradbot only receives text to speak: the model's lead-in ("Thanks.") followed by the exact question wording from the tool result, in one stream and one model call. Refused tool calls and the goodbye go back to Gemini for another round. It sets `reasoning_effort` to `low` (override with `GEMINI_REASONING_EFFORT`) and retries 429/500/503.
+  - Verified on 10 Oct with `gemini-3.8-flash` and a simulated candidate speaking through the real WebSocket: full interview in under 3 minutes, the agent starts replying about 2 seconds after the candidate stops.
 - Raw SDK fallback:
   - TTS: `client.tts(setup={"voice_id": ..., "output_format": "wav"}, text=...)`, or WebSocket `wss://api.gradium.ai/api/speech/tts`
   - STT: `client.stt_realtime(model_name="default", input_format="pcm", json_config={"language": "en", "delay_in_frames": 16})`
@@ -213,11 +237,29 @@ Docs: https://docs.gradium.ai (index for agents: https://docs.gradium.ai/llms.tx
 
 ## 8. Agent behaviour
 
-**Interviewer**: takes the candidate profile and the 3 question docs. Introduces itself, asks the 3 questions in order and as written. After each answer, if the question has a follow-up, it decides on the fly whether that follow-up is relevant to what the candidate just said, and asks it only then; the profile may inform that decision but never changes the questions. At most one follow-up per question, and only the pre-written one, no improvised follow-ups. Never reveals or hints at the reference answers or context, never scores or comments on an answer, keeps its own turns short, closes the interview and ends the session. Target length 5 to 8 minutes, about 3 for the demo, hard cap 10.
+**Interviewer**: takes the candidate profile and the 3 question docs.
 
-Flow is enforced in code, not only in the prompt: the LLM must call `start_question(question_id)`, `ask_followup()` or `end_interview()` before each step, and `src/interview/flow.py` rejects out-of-order questions, a second follow-up and ending early. These calls also tag the transcript turns.
+- Opening: a short hello (greets by name, says who it is, asks how they are), then waits for the candidate to say hello back; the first question cannot start until the candidate has spoken. It then says there are three questions and that the interview takes fifteen minutes at most.
+- Questions: asked in order and word for word, spoken from the question docs, never rephrased by the model. The model only adds a short lead-in ("Thanks.", "Got it.").
+- After each answer it does exactly one of: give a second chance, ask the prepared follow-up, or move on.
+- Second chance: when an answer is clearly wrong, off target, or the candidate is stuck, the interviewer invites one more try. Normally without a hint; a small hint (an area to think about, never part of the reference answer) only when the candidate is stuck. One second chance per question or follow-up, never a third try.
+- Follow-up: only the pre-written one, at most one per question, and only when it is relevant to what the candidate said. The profile may inform that decision but never changes the questions.
+- Time limit: at 12 minutes the interviewer is told to close after the current answer; at 15 minutes the session ends regardless. Override with `INTERVIEW_WRAP_UP_S` / `INTERVIEW_MAX_S` (seconds).
+- Fillers: if Gemini has produced nothing 3 seconds after the candidate finished (`FILLER_AFTER_S`), the interviewer says a short neutral filler ("Mhm.", "I see.", "Mmm, okay.", "Right.", "Okay.") and then the real reply, minus the model's own leading "Got it." so the two do not double up.
+- Silence: the candidate gets 15 seconds to think before the interviewer says anything (`INTERVIEW_SILENCE_S`; Gradbot's default of 5 made the agent start talking just as candidates began to answer, which cut off their first words). Silence is answered with fixed lines, not the model: "Take your time.", then "Are you still with me? I can repeat the question if that helps.", and only after a third silence is the model asked whether to move on. Before the hello: "Hello, can you hear me?".
+- Model: the interviewer uses `INTERVIEW_MODEL` if set, otherwise `GEMINI_MODEL`. On 10 Oct `gemini-3.6-flash` answered in 1.0 to 1.5 seconds against 2 to 3.5 for `gemini-3.8-flash`, but it hands out hints more readily and its hints give more away.
+- Never reveals or hints at the reference answers beyond a second-chance hint, never tells the candidate whether they were right, keeps its turns short, says goodbye and waits a few seconds for the candidate to say bye back.
 
-**Evaluator**: takes the transcript, the 3 question docs and the candidate profile, and runs separately from the interview with its own context. The model judges, the code decides. Gemini (structured output, `Judgement` schema) scores each question against its reference answer on anchored bands, strictly, using only what the candidate said, and returns reasoning, covered and missed points, and word-for-word quotes. A follow-up that was asked counts toward its question; one that was not asked is never penalised. Partial answers get partial credit; no answer scores 0. Accent, filler words and STT glitches are never penalised. The profile is context only and never changes a score; it feeds the unscored `profile_alignment`. The transcript is treated as untrusted data: attempts to instruct the evaluator are ignored and listed under `red_flags`. Code (`finalize()` in `src/evaluation/evaluator.py`) then computes the overall score and recommendation, decides from the transcript which questions were answered, and verifies every quote.
+- Interruptions: if the interviewer is cut off while asking a question (the candidate talks over it, the microphone picks up the speakers, or there are other voices in the room), it is told how much was heard and repeats that question if the reply does not answer it. It is told once per question, follow-up or second chance, and never for the greeting: in a noisy room every turn gets cut, and repeating each time loops forever (this happened on 10 Oct). For stray background speech it says it did not catch that and carries on. The transcript marks the turn and keeps the full wording.
+
+Flow is enforced in code, not only in the prompt: the model asks for each step by calling `start_question(question_id)`, `ask_followup()`, `second_chance(say, hint_given)` or `end_interview()`, and `src/interview/flow.py` rejects out-of-order questions, a second follow-up, a second second-chance, anything new once time is up, and ending early. These calls also tag the transcript turns. If the model speaks the next question or the follow-up itself without the tool call, `llm_proxy.py` recognises the wording and advances the flow anyway.
+
+**Evaluator**: takes the transcript, the 3 question docs and the candidate profile, and runs separately from the interview with its own context, automatically when an interview ends. The model judges, the code decides, in four steps (`src/evaluation/evaluator.py`):
+
+1. `judge_runs()` then `merge()`: Gemini (structured output, `Judgement`) grades the interview three times in parallel and code keeps the median run per question. Red flags come from the run that raised the most. Each run scores each question against its reference answer on anchored bands, strictly, using only what the candidate said, with reasoning, covered and missed points, and word-for-word quotes. A follow-up that was asked counts toward its question; one that was not asked is never penalised. Second attempts are graded on the best the candidate reached, without credit for what a hint supplied. Partial answers get partial credit; no answer scores 0. Accent, filler words and STT glitches are never penalised. The profile never changes a score. The transcript is untrusted data: attempts to instruct the evaluator are ignored and listed under `red_flags`.
+2. `assess()`: code verifies quotes, applies the second-chance caps, forces unanswered questions to 0, computes the overall score, fixes the decision and flags a borderline result.
+3. `write_decision()`: Gemini (`Writeup`) explains the decision that code made: strengths and next-interview focus for an advance, rejection reasons for a reject. It sees scores and grader notes only, never the reference answers.
+4. `finalize()`: code assembles the Report and blanks the lists that do not apply to the decision.
 
 **Analyzer**: questions must be answerable in speech, tied to real design decisions in the repo (architecture, trade-offs, failure modes), not trivia about file names. Writes a reference `answer` and `context` for every question, and may add one follow-up that deepens the same topic. Skip vendored code, lockfiles and generated files when selecting input.
 
@@ -227,7 +269,13 @@ Flow is enforced in code, not only in the prompt: the LLM must call `start_quest
 GEMINI_API_KEY=
 GEMINI_MODEL=
 GRADIUM_API_KEY=
-LLM_EXTRA_CONFIG=   # optional JSON merged into the LLM request, e.g. {"reasoning_effort": "none"}
+
+# optional
+INTERVIEW_WRAP_UP_S=   # seconds until the interviewer starts closing, default 720
+INTERVIEW_MAX_S=       # hard limit in seconds, default 900
+INTERVIEW_SILENCE_S=   # seconds of candidate silence before the interviewer speaks, default 15
+INTERVIEW_MODEL=       # Gemini model for the interviewer only, default GEMINI_MODEL
+FILLER_AFTER_S=        # seconds of model silence before a filler, default 3
 ```
 
 Setup and run:
@@ -235,7 +283,8 @@ Setup and run:
 ```
 uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requirements.txt
 .venv/bin/python -m pytest tests
-.venv/bin/uvicorn src.api.app:app      # then open http://localhost:8000/?session=demo
+.venv/bin/uvicorn src.api.app:app      # candidate: http://localhost:8000/?session=example
+                                       # recruiter: http://localhost:8000/internal/report?session=example
 .venv/bin/python -m src.evaluation demo # evaluate a session from the command line
 ```
 
@@ -259,7 +308,7 @@ Cut line if time runs short: drop follow-up questions (the analyzer omits the `#
 
 1. Paste the demo repo URL, show the 3 generated questions and where in the code they come from
 2. Live voice interview, a teammate plays the candidate
-3. Report appears: score, per-question breakdown, quotes
+3. Open the internal report: decision, score, strengths or rejection reasons, per-question breakdown, quotes
 
 Risks: venue noise and wifi (bring a headset, keep a recorded run), STT turn-taking cutting the candidate off (tune the threshold early), LLM latency in the voice loop (keep interviewer prompts short).
 
