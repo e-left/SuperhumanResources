@@ -1,0 +1,33 @@
+{
+  "name": "flatpal-api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "prisma generate && tsc",
+    "start": "npm run build && node --env-file=.env dist/src/main.js",
+    "worker": "npm run build && node --env-file=.env dist/src/worker.js",
+    "typecheck": "prisma generate && tsc --noEmit",
+    "test": "npm run build && node --env-file=.env --test dist/test/*.test.js",
+    "db:migrate": "node --env-file=.env node_modules/prisma/build/index.js migrate deploy",
+    "db:seed": "node --env-file=.env --import tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@nestjs/common": "11.2.7",
+    "@nestjs/core": "11.2.7",
+    "@nestjs/platform-express": "11.2.7",
+    "@prisma/client": "6.19.0",
+    "@supabase/supabase-js": "2.117.3",
+    "bullmq": "5.81.5",
+    "class-transformer": "0.5.1",
+    "class-validator": "0.14.2",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2",
+    "stream-chat": "9.54.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.30",
+    "prisma": "6.19.0",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
+  }
+}
