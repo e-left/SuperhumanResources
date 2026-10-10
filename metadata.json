@@ -1,0 +1,61 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4JR9XJMXR218H1CY8CKMP64",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".env.example",
+    ".gitignore",
+    "CONTEXT.md",
+    "fixtures/demo/candidate.md",
+    "fixtures/demo/questions/q1.md",
+    "fixtures/demo/questions/q2.md",
+    "fixtures/demo/questions/q3.md",
+    "fixtures/demo/transcript.json",
+    "fixtures/example/candidate.md",
+    "fixtures/example/questions/q1.md",
+    "fixtures/example/questions/q2.md",
+    "fixtures/example/questions/q3.md",
+    "requirements.txt",
+    "src/__init__.py",
+    "src/api/__init__.py",
+    "src/api/app.py",
+    "src/api/llm_proxy.py",
+    "src/evaluation/__init__.py",
+    "src/evaluation/__main__.py",
+    "src/evaluation/evaluator.py",
+    "src/evaluation/prompt.py",
+    "src/interview/__init__.py",
+    "src/interview/flow.py",
+    "src/interview/loader.py",
+    "src/interview/prompt.py",
+    "src/interview/recorder.py",
+    "src/interview/session.py",
+    "src/shared/__init__.py",
+    "src/shared/models.py",
+    "tests/__init__.py",
+    "tests/test_evaluation.py",
+    "tests/test_flow.py",
+    "tests/test_llm_proxy.py",
+    "tests/test_loader.py",
+    "web/index.html",
+    "web/report.html"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 162,
+    "cache_creation_tokens": 223264,
+    "cache_read_tokens": 10854633,
+    "output_tokens": 109114,
+    "api_call_count": 71
+  }
+}
