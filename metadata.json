@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K5X2YHEEWTS5VQ4B2RCR1A",
+  "strategy": "manual-commit",
+  "branch": "feat/top-header-branding",
+  "checkpoints_count": 3,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 59689,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 1566336,
+    "output_tokens": 5546,
+    "api_call_count": 36,
+    "subagent_tokens_complete": true
+  }
+}
