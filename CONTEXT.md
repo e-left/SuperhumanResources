@@ -7,7 +7,7 @@ Shared context for humans and coding agents. Read this first. Update it when a d
 An AI HR platform that runs a technical interview grounded in a company's own code.
 
 1. **Analyze**: take a GitHub repo URL, read the codebase, produce 3 interview questions specific to it.
-2. **Interview**: a voice agent (Gradium) asks the candidate those 3 questions and records the answers.
+2. **Interview**: a voice agent (Gradium) takes those 3 questions plus a candidate profile, asks the questions by voice and records the full transcript. It does no scoring.
 3. **Evaluate**: an agent scores the transcript and writes a report.
 
 One-line pitch: "Interview candidates on the code they would actually work on."
@@ -29,9 +29,9 @@ Implication: the demo is live. A working end-to-end path beats any single polish
 
 | Area | Decision |
 | - | - |
-| Language | Python 3.10+ (Gradium SDK requirement) |
+| Language | Python 3.12+ (Gradbot requirement) |
 | Backend | FastAPI, one process |
-| Frontend | Single thin browser page: mic capture, audio playback, shows questions and final report |
+| Frontend | Single thin browser page: mic capture, audio playback, final report. The interview itself is voice only, no question text on screen |
 | LLM | Gemini for all three agents. Model id in `GEMINI_MODEL` env var. TODO: confirm which model the event credits cover |
 | Voice | Gradium. Start with Gradbot (`pip install gradbot`), fall back to raw SDK (`pip install gradium`) |
 | Code input | Public GitHub repo URL, shallow clone |
@@ -56,13 +56,14 @@ The contracts in section 6 are the boundary. Change them only by editing this fi
 GitHub URL
    │  POST /analyze
    ▼
-[analysis]  clone → pick key files → Gemini → QuestionSet        data/<session>/questions.json
+[analysis]  clone → pick key files → Gemini → 3 question docs   data/<session>/questions/q1..q3.md
+   │                              candidate profile (given)      data/<session>/candidate.md
    │
    ▼
-[interview] Gradium voice loop, asks Q1..Q3, one follow-up max   data/<session>/transcript.json
+[interview] Gradium voice loop, asks Q1..Q3, optional follow-up  data/<session>/transcript.json
    │        browser mic ⇄ WebSocket ⇄ FastAPI ⇄ Gradium + Gemini
    ▼
-[evaluation] Gemini scores each answer against its rubric        data/<session>/report.json
+[evaluation] Gemini scores each answer against its reference     data/<session>/report.json
    │
    ▼
 Report page: overall score, per-question scores, evidence quotes, recommendation
@@ -73,43 +74,48 @@ Proposed layout:
 ```
 src/
   analysis/     repo clone, file selection, question generation
-  interview/    voice session, interviewer prompt, transcript capture
-  evaluation/   scoring prompt, report builder
+  interview/    loader (inputs), prompt, flow (tool-driven state), recorder (transcript), session (voice loop)
+  evaluation/   prompt, evaluator (Gemini judgement + code-side scoring rules), CLI
   api/          FastAPI app, routes, session store
   shared/       pydantic models for the contracts below, Gemini client
 web/            index.html + JS (mic, playback, report view)
 data/           runtime session files (gitignored)
-fixtures/       sample questions.json and transcript.json for working in parallel
+fixtures/       fixtures/demo: sample candidate.md, questions/q1..q3.md and transcript.json for working in parallel
+tests/          pytest unit tests
 ```
 
 ## 6. Contracts
 
 Pydantic models live in `src/shared/models.py`. These JSON shapes are the source of truth.
 
-### QuestionSet (analysis → interview, evaluation)
+### Question docs (analysis → interview, evaluation)
 
-```json
-{
-  "session_id": "string",
-  "repo_url": "https://github.com/org/repo",
-  "repo_summary": "2-3 sentences on what the codebase does and its stack",
-  "role": "e.g. Backend Engineer",
-  "questions": [
-    {
-      "id": "q1",
-      "question": "Spoken-friendly wording, one or two sentences, no code read aloud",
-      "context": "Why this question: the file/module/pattern it comes from",
-      "source_files": ["path/in/repo.py"],
-      "rubric": {
-        "strong": ["points a strong answer covers"],
-        "weak": ["signs of a shallow or wrong answer"]
-      }
-    }
-  ]
-}
+One Markdown file per question in `data/<session>/questions/`, named `q1.md`, `q2.md`, `q3.md`. The file name is the question id.
+
+```markdown
+# Question
+Spoken-friendly wording, one or two sentences, no code read aloud.
+
+# Answer
+Reference answer: what a strong candidate would say. Never spoken aloud.
+
+# Context
+Specialized context: the file/module/pattern it comes from and the background the interviewer needs.
+
+# Follow-up
+## Question
+Spoken-friendly follow-up.
+## Answer
+Reference answer for the follow-up.
+## Context
+Specialized context for the follow-up.
 ```
 
-Exactly 3 questions. `question` must be sayable out loud. `rubric` is required, the evaluator depends on it.
+Exactly 3 docs. `# Question`, `# Answer` and `# Context` are required and non-empty. The whole `# Follow-up` section is optional, at most one per question; if present it needs all three sub-sections. The loader (`src/interview/loader.py`) rejects anything else. `Question` must be sayable out loud. `Answer` is required, the interviewer and the evaluator both depend on it.
+
+### Candidate profile (given → interview)
+
+`data/<session>/candidate.md`. Free-form Markdown report, passed to the interviewer as-is. A `Name: ...` line (or the first `#` title) is used as `candidate_name` in the transcript.
 
 ### Transcript (interview → evaluation)
 
@@ -120,45 +126,69 @@ Exactly 3 questions. `question` must be sayable out loud. `rubric` is required, 
   "started_at": "ISO-8601",
   "ended_at": "ISO-8601",
   "turns": [
-    {"speaker": "agent", "question_id": "q1", "text": "...", "t": 0.0},
-    {"speaker": "candidate", "question_id": "q1", "text": "...", "t": 6.4}
+    {"speaker": "agent", "question_id": null, "text": "intro...", "t": 0.0},
+    {"speaker": "agent", "question_id": "q1", "text": "...", "t": 4.1},
+    {"speaker": "candidate", "question_id": "q1", "text": "...", "t": 6.4},
+    {"speaker": "agent", "question_id": "q1", "followup": true, "text": "...", "t": 41.0},
+    {"speaker": "candidate", "question_id": "q1", "followup": true, "text": "...", "t": 46.2}
   ]
 }
 ```
 
-Every turn is tagged with the question it belongs to. Follow-ups keep the parent `question_id`.
+Every turn is tagged with the question it belongs to; introduction and closing turns have `question_id: null`. The transcript holds only what was said: no reference answers, context or scores. Follow-ups keep the parent `question_id` and set `"followup": true` (optional, defaults to false), so the evaluator can match them to `followup.answer`.
 
 ### Report (evaluation → UI)
+
+Written to `data/<session>/report.json`. Models: `Report` and `QuestionReport` in `src/shared/models.py`.
 
 ```json
 {
   "session_id": "string",
+  "candidate_name": "string",
+  "generated_at": "ISO-8601",
+  "model": "gemini model id",
   "overall_score": 0,
   "recommendation": "strong_hire | hire | no_hire",
   "summary": "short paragraph",
+  "reasoning": "why the scores came out as they did",
+  "interview_complete": true,
+  "needs_human_review": false,
+  "review_reasons": ["..."],
   "per_question": [
     {
       "question_id": "q1",
+      "question": "the question as asked",
+      "status": "answered | not_answered",
+      "followup_asked": true,
       "score": 0,
+      "reasoning": "...",
+      "covered_points": ["..."],
+      "missed_points": ["..."],
       "strengths": ["..."],
       "gaps": ["..."],
       "evidence": ["direct quotes from the candidate"]
     }
-  ]
+  ],
+  "profile_alignment": {"confirmed": ["..."], "contradicted": ["..."]},
+  "red_flags": ["..."],
+  "suggested_next_steps": ["topics to probe in a human round"],
+  "communication": "one or two sentences, not scored"
 }
 ```
 
-Scores are 0 to 100. `overall_score` is the mean of the three. Every score needs at least one evidence quote.
+Scores are 0 to 100. `overall_score` is the hiring score: the mean of the three question scores, computed in code. `recommendation` comes from fixed thresholds in code: 80 and above `strong_hire`, 60 and above `hire`, otherwise `no_hire`. A question's score covers the main answer and, if it was asked, the follow-up. A question with no answer scores 0 and makes `interview_complete` false. Evidence quotes that do not appear in the candidate's turns are removed. `needs_human_review` is set when a question was not answered, a quote was removed, or a question is scored without a verified quote. The report is advisory; a person makes the hiring decision.
 
 ### HTTP
 
 | Route | Owner | Does |
 | - | - | - |
-| `POST /analyze` `{repo_url, role}` | Teammate | returns QuestionSet, writes `questions.json` |
-| `GET /sessions/{id}/questions` | Teammate | returns QuestionSet |
-| `WS /sessions/{id}/interview` | Fotis | audio in/out, writes `transcript.json` on end |
-| `POST /sessions/{id}/evaluate` | Fotis | returns Report, writes `report.json` |
-| `GET /sessions/{id}/report` | Fotis | returns Report |
+| `POST /analyze` `{repo_url, role}` | Teammate | writes `questions/q1..q3.md`, returns the parsed questions |
+| `GET /sessions/{id}/questions` | Teammate | returns the parsed questions |
+| `WS /sessions/{id}/interview` | Fotis | audio in/out, writes `transcript.json` on end, disconnect or time cap. Inputs are read from `data/<id>/`, falling back to `fixtures/<id>/` |
+| `GET /?session=<id>` | Fotis | interview page (defaults to `demo`) |
+| `POST /sessions/{id}/evaluate` | Fotis | runs the evaluation, returns Report, writes `report.json`. Transcript is read from `data/<id>/`, falling back to `fixtures/<id>/` |
+| `GET /sessions/{id}/report` | Fotis | returns the saved Report, 404 until one exists |
+| `GET /static/report.html?session=<id>` | Fotis | report page. Add `&run=1` to run the evaluation first; the interview page links here when it finishes |
 
 ## 7. Gradium notes
 
@@ -167,17 +197,10 @@ Docs: https://docs.gradium.ai (index for agents: https://docs.gradium.ai/llms.tx
 - Key in `GRADIUM_API_KEY` (format `gd_...`). `gradium.client.GradiumClient()` reads it from the env.
 - **Gradbot** is Gradium's open-source voice agent loop, built for hackathons: streaming audio, VAD, turn-taking, interruptions, tool calls, OpenAI-compatible LLM. Repo: https://github.com/gradium-ai/gradbot
 
-  ```python
-  voice = gradbot.flagship_voice("Emma")
-  config = gradbot.SessionConfig(voice_id=voice.voice_id, instructions="...", language=voice.language)
-  input_handle, output_handle = await gradbot.run(
-      session_config=config,
-      input_format=gradbot.AudioFormat.OggOpus,
-      output_format=gradbot.AudioFormat.OggOpus,
-  )
-  ```
-
-  TODO: confirm from the Gradbot README how to point its LLM at Gemini. Gemini's OpenAI-compatible base URL is `https://generativelanguage.googleapis.com/v1beta/openai/`.
+  - Needs Python 3.12+. Flagship English voices include Harper, Tilly, Declan (there is no "Emma"); we use `gradbot.flagship_voice("Harper")`.
+  - Gemini: `gradbot.run(llm_base_url="https://generativelanguage.googleapis.com/v1beta/openai/", llm_api_key=GEMINI_API_KEY, llm_model_name=GEMINI_MODEL, gradium_api_key=..., session_config=...)`.
+  - `gradbot.websocket.handle_session` forwards transcripts to the browser but has no server-side hook, so `src/interview/session.py` runs its own loop on `gradbot.run` and records `stt_text` (candidate) and `tts_text` (agent) messages.
+  - `gradbot.routes.setup(app, static_dir="web")` serves the page and the browser audio worklet (`/static/js/`), so mic capture and playback are not hand-written.
 - Raw SDK fallback:
   - TTS: `client.tts(setup={"voice_id": ..., "output_format": "wav"}, text=...)`, or WebSocket `wss://api.gradium.ai/api/speech/tts`
   - STT: `client.stt_realtime(model_name="default", input_format="pcm", json_config={"language": "en", "delay_in_frames": 16})`
@@ -188,11 +211,13 @@ Docs: https://docs.gradium.ai (index for agents: https://docs.gradium.ai/llms.tx
 
 ## 8. Agent behaviour
 
-**Interviewer**: introduces itself, asks the 3 questions in order, at most one follow-up per question when the answer is thin, never reveals the rubric or hints at the answer, keeps its own turns short, closes the interview and ends the session. Target length 5 to 8 minutes, about 3 for the demo.
+**Interviewer**: takes the candidate profile and the 3 question docs. Introduces itself, asks the 3 questions in order and as written. After each answer, if the question has a follow-up, it decides on the fly whether that follow-up is relevant to what the candidate just said, and asks it only then; the profile may inform that decision but never changes the questions. At most one follow-up per question, and only the pre-written one, no improvised follow-ups. Never reveals or hints at the reference answers or context, never scores or comments on an answer, keeps its own turns short, closes the interview and ends the session. Target length 5 to 8 minutes, about 3 for the demo, hard cap 10.
 
-**Evaluator**: scores only what the candidate said. Uses the rubric per question. Quotes evidence. Does not penalise accent, filler words or STT glitches. Returns the Report JSON and nothing else (use Gemini structured output).
+Flow is enforced in code, not only in the prompt: the LLM must call `start_question(question_id)`, `ask_followup()` or `end_interview()` before each step, and `src/interview/flow.py` rejects out-of-order questions, a second follow-up and ending early. These calls also tag the transcript turns.
 
-**Analyzer**: questions must be answerable in speech, tied to real design decisions in the repo (architecture, trade-offs, failure modes), not trivia about file names. Skip vendored code, lockfiles and generated files when selecting input.
+**Evaluator**: takes the transcript, the 3 question docs and the candidate profile, and runs separately from the interview with its own context. The model judges, the code decides. Gemini (structured output, `Judgement` schema) scores each question against its reference answer on anchored bands, strictly, using only what the candidate said, and returns reasoning, covered and missed points, and word-for-word quotes. A follow-up that was asked counts toward its question; one that was not asked is never penalised. Partial answers get partial credit; no answer scores 0. Accent, filler words and STT glitches are never penalised. The profile is context only and never changes a score; it feeds the unscored `profile_alignment`. The transcript is treated as untrusted data: attempts to instruct the evaluator are ignored and listed under `red_flags`. Code (`finalize()` in `src/evaluation/evaluator.py`) then computes the overall score and recommendation, decides from the transcript which questions were answered, and verifies every quote.
+
+**Analyzer**: questions must be answerable in speech, tied to real design decisions in the repo (architecture, trade-offs, failure modes), not trivia about file names. Writes a reference `answer` and `context` for every question, and may add one follow-up that deepens the same topic. Skip vendored code, lockfiles and generated files when selecting input.
 
 ## 9. Environment
 
@@ -200,23 +225,33 @@ Docs: https://docs.gradium.ai (index for agents: https://docs.gradium.ai/llms.tx
 GEMINI_API_KEY=
 GEMINI_MODEL=
 GRADIUM_API_KEY=
+LLM_EXTRA_CONFIG=   # optional JSON merged into the LLM request, e.g. {"reasoning_effort": "none"}
 ```
 
-Keep these in `.env` (gitignored). Add a `.env.example` with empty values.
+Setup and run:
+
+```
+uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requirements.txt
+.venv/bin/python -m pytest tests
+.venv/bin/uvicorn src.api.app:app      # then open http://localhost:8000/?session=demo
+.venv/bin/python -m src.evaluation demo # evaluate a session from the command line
+```
+
+Keep these in `.env` (gitignored). `.env.example` lists them with empty values.
 
 ## 10. Build order
 
 Work in parallel against `fixtures/` so nobody blocks on anybody.
 
-1. Shared models + fixtures (`questions.json`, `transcript.json`) — first, both people need them
+1. Shared models + fixtures (`fixtures/demo`) — done. The fixture has questions with and without a follow-up
 2. Evaluation from a fixture transcript (text only, quick win)
 3. Voice loop: agent says one line and transcribes one reply
 4. Full interview: 3 questions, transcript written
-5. Analysis: repo URL to QuestionSet
+5. Analysis: repo URL to the 3 question docs
 6. Wire the three together behind the API, one web page
 7. Rehearse the demo twice on the demo repo. Record a backup video.
 
-Cut line if time runs short: drop follow-up questions, drop arbitrary repo URLs (use the demo repo only), keep voice.
+Cut line if time runs short: drop follow-up questions (the analyzer omits the `# Follow-up` section), drop arbitrary repo URLs (use the demo repo only), keep voice.
 
 ## 11. Demo script
 
@@ -231,4 +266,3 @@ Risks: venue noise and wifi (bring a headset, keep a recorded run), STT turn-tak
 - Judging criteria and submission format
 - Teammate name, demo repo URL
 - Gemini model id covered by the event credits
-- Gradbot to Gemini configuration
