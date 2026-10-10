@@ -3,7 +3,7 @@
   "checkpoint_id": "01M4K3HK09YDM9NAMJ3056PSDG",
   "strategy": "manual-commit",
   "branch": "feat/applicants-list",
-  "checkpoints_count": 7,
+  "checkpoints_count": 12,
   "files_touched": [
     "src/api/app.py",
     "tests/test_workspace.py",
@@ -18,14 +18,21 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 52611,
+    "input_tokens": 93480,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 9359232,
-    "output_tokens": 6725,
-    "api_call_count": 67,
+    "cache_read_tokens": 10408448,
+    "output_tokens": 13729,
+    "api_call_count": 94,
     "subagent_tokens_complete": true
   }
 }
