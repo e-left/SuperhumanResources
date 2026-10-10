@@ -79,7 +79,7 @@ svg {
   inset: 0 auto 0 0;
   width: 230px;
   border-right: 1px solid var(--line);
-  padding: 32px 18px 20px;
+  padding: 18px 18px 20px;
   background: #ffffff;
   display: flex;
   flex-direction: column;
@@ -87,7 +87,8 @@ svg {
 .brand {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  width: fit-content;
   padding: 0 4px;
   font-family: var(--display);
   font-size: 16px;
@@ -99,7 +100,7 @@ svg {
 .brand-mark {
   position: relative;
   display: block;
-  width: 104px;
+  width: 56px;
   aspect-ratio: 46 / 39;
   overflow: hidden;
   flex-shrink: 0;
@@ -115,7 +116,7 @@ svg {
   display: flex;
   gap: 10px;
   align-items: center;
-  margin: 38px 5px 33px;
+  margin: 24px 5px 33px;
   font-size: 11px;
 }
 .workspace-avatar {
@@ -301,7 +302,7 @@ svg {
   margin-left: 230px;
 }
 .topbar {
-  height: 104px;
+  height: 80px;
   border-bottom: 1px solid var(--line);
   display: flex;
   align-items: center;
@@ -316,19 +317,14 @@ svg {
 }
 .topbar-brand {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-}
-.brand-name {
-  font: 700 28px/1 var(--display);
+  align-items: baseline;
+  gap: 7px;
+  white-space: nowrap;
+  font: 700 28px/1.2 var(--display);
   letter-spacing: -1.2px;
 }
 .brand-descriptor {
   color: var(--accent);
-  font: 700 10px/1 var(--sans);
-  letter-spacing: 4px;
-  text-transform: uppercase;
 }
 .breadcrumb {
   display: flex;
@@ -1488,7 +1484,7 @@ form label[for="subdir"] {
     justify-content: center;
   }
   .brand-mark {
-    width: 48px;
+    width: 36px;
   }
   .workspace-label,
   .nav-caption,
@@ -1517,7 +1513,7 @@ form label[for="subdir"] {
     margin-left: 70px;
   }
   .topbar {
-    height: 104px;
+    height: 80px;
   }
   .studio-grid {
     gap: 14px;
@@ -1579,8 +1575,10 @@ form label[for="subdir"] {
     flex-wrap: wrap;
     gap: 12px;
   }
-  .brand-name {
-    font-size: 24px;
+  .topbar-brand {
+    font-size: clamp(18px, 5.5vw, 24px);
+    gap: 5px;
+    letter-spacing: -0.8px;
   }
   .topbar-right {
     gap: 12px;
