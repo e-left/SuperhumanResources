@@ -31,7 +31,7 @@ Implication: the demo is live. A working end-to-end path beats any single polish
 | - | - |
 | Language | Python 3.12+ (Gradbot requirement) |
 | Backend | FastAPI, one process |
-| Frontend | Two pages: the candidate's interview page (voice only, no question text, no results) and an internal report page for recruiters |
+| Frontend | Buildless HTML/CSS/JS. Context Studio at `/` (analysis workspace), the candidate's voice interview at `/?session=<id>` (voice only, no question text, no results), and an internal report page for recruiters at `/internal/report` |
 | LLM | Gemini for all three agents. Model id in `GEMINI_MODEL` env var, currently `gemini-3.8-flash` |
 | Voice | Gradium. Start with Gradbot (`pip install gradbot`), fall back to raw SDK (`pip install gradium`) |
 | Code input | Public GitHub repo URL, shallow clone |
@@ -78,7 +78,7 @@ src/
   evaluation/   prompt, evaluator (Gemini judgement + code-side scoring rules), CLI
   api/          FastAPI app, routes, session store
   shared/       pydantic models for the contracts below, Gemini client
-web/            index.html: the candidate's page (mic, playback)
+web/            context.html/css/js (analysis workspace), index.html (the candidate's voice interview)
 internal/       report.html: the recruiter's report page
 data/           runtime session files (gitignored)
 fixtures/       sample sessions: `demo` (fictional order service, includes a transcript.json) and `example` (questions about this repo's own code)
@@ -206,10 +206,12 @@ The report supports a decision; a person reviews it before the candidate is told
 
 | Route | Owner | Does |
 | - | - | - |
-| `POST /analyze` `{repo_url, role}` | Teammate | writes `questions/q1..q3.md`, returns the parsed questions |
+| `GET /` | Teammate | Context Studio: repository/role form, analysis results, and sample preview |
+| `POST /analyze` `{repo_url, role, subdir?}` | Teammate | writes `questions/q1..q3.md` and `context.json`, returns the parsed questions |
 | `GET /sessions/{id}/questions` | Teammate | returns the parsed questions |
+| `GET /sessions/{id}/context` | Teammate | returns saved codebase context; 404 if missing, 422 if invalid |
 | `WS /sessions/{id}/interview` | Fotis | audio in/out, writes `transcript.json` on end, disconnect or time limit, then starts the evaluation. Inputs are read from `data/<id>/`, falling back to `fixtures/<id>/` |
-| `GET /?session=<id>` | Fotis | candidate's interview page (defaults to `demo`). Ends with a thank-you, no results |
+| `GET /?session=<id>` | Fotis | candidate's voice interview page (`?session=demo` for the fixture). Ends with a thank-you, no results |
 | `POST /llm/s/{token}/chat/completions` | Fotis | internal: per-session LLM endpoint for Gradbot, see section 7 |
 | `POST /sessions/{id}/evaluate` | Fotis | runs the evaluation, returns Report, writes `report.json`. Also runs automatically when an interview ends. Transcript is read from `data/<id>/`, falling back to `fixtures/<id>/` |
 | `GET /sessions/{id}/report` | Fotis | returns the saved Report, 404 until one exists |
@@ -261,7 +263,7 @@ Flow is enforced in code, not only in the prompt: the model asks for each step b
 3. `write_decision()`: Gemini (`Writeup`) explains the decision that code made: strengths and next-interview focus for an advance, rejection reasons for a reject. It sees scores and grader notes only, never the reference answers.
 4. `finalize()`: code assembles the Report and blanks the lists that do not apply to the decision.
 
-**Analyzer**: questions must be answerable in speech, tied to real design decisions in the repo (architecture, trade-offs, failure modes), not trivia about file names. Writes a reference `answer` and `context` for every question, and may add one follow-up that deepens the same topic. Skip vendored code, lockfiles and generated files when selecting input.
+**Analyzer**: Gemini reads the collected codebase files itself, extracts technologies and project areas, and generates 3 generalized spoken questions about relevant project experience, optimizations and engineering trade-offs. Candidates do not need to have read the repository. Writes a reference `answer` and private `context` with source paths for every question; no follow-ups in the initial implementation. Skip hidden files (including secrets), vendored code, lockfiles and generated files when selecting input. Saves the extracted context and file coverage to `data/<session>/context.json`. Run locally with `.venv/bin/python -m src.analysis --path demo-proj --role "Backend Engineer"`, or use `--repo-url` with an optional `--subdir`.
 
 ## 9. Environment
 
@@ -298,7 +300,7 @@ Work in parallel against `fixtures/` so nobody blocks on anybody.
 2. Evaluation from a fixture transcript (text only, quick win)
 3. Voice loop: agent says one line and transcribes one reply
 4. Full interview: 3 questions, transcript written
-5. Analysis: repo URL to the 3 question docs
+5. Analysis: repo URL to the 3 question docs — implemented, offline tests pass; live Gemini run pending API key
 6. Wire the three together behind the API, one web page
 7. Rehearse the demo twice on the demo repo. Record a backup video.
 

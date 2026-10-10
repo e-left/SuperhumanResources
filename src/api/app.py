@@ -8,6 +8,7 @@ import fastapi
 import fastapi.responses
 import gradbot
 
+from src.analysis.routes import router as analysis_router
 from src.evaluation import evaluator
 from src.interview import llm_proxy, loader
 from src.interview.session import run_interview
@@ -24,6 +25,7 @@ logging.getLogger("interview").addHandler(_handler)
 logging.getLogger("interview").setLevel(logging.INFO)
 app = fastapi.FastAPI(title="SuperhumanResources")
 app.include_router(llm_proxy.router)
+app.include_router(analysis_router)
 
 
 @app.websocket("/sessions/{session_id}/interview")
@@ -66,5 +68,12 @@ def report_page():
     return fastapi.responses.FileResponse(ROOT / "internal" / "report.html")
 
 
-# Serves web/index.html at / and Gradbot's audio worklet under /static/js.
+# Context Studio at /, the candidate's voice interview at /?session=<id>.
+@app.get("/", include_in_schema=False)
+def workspace(session: str | None = None):
+    page = "index.html" if session is not None else "context.html"
+    return fastapi.responses.FileResponse(ROOT / "web" / page)
+
+
+# Serves the workspace assets and Gradbot's audio worklet under /static/js.
 gradbot.routes.setup(app, static_dir=ROOT / "web")
