@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K3Q5SVK4E44XG93APQF63W",
+  "session_id": "01a12620-37e2-7512-b0f2-b34496ce3471",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T14:33:24.803035Z",
+  "branch": "chore/entire-review-runner",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Codex",
+  "model": "gpt-6.1-sol",
+  "turn_id": "fab42a25aacb",
+  "checkpoint_transcript_start": 284,
+  "transcript_lines_at_start": 284,
+  "compact_transcript_start": 37,
+  "token_usage": {
+    "input_tokens": 7172,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 368128,
+    "output_tokens": 508,
+    "api_call_count": 6
+  },
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 88,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".codex/hooks.json": 88
+      }
+    }
+  ]
+}
