@@ -26,3 +26,13 @@ def questions(session_id: str):
         return agent.load_questions(session_id)
     except (loader.SessionError, FileNotFoundError) as exc:
         raise fastapi.HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.get("/sessions/{session_id}/context")
+def context(session_id: str):
+    try:
+        return agent.load_context(session_id)
+    except (loader.SessionError, FileNotFoundError) as exc:
+        raise fastapi.HTTPException(status_code=404, detail="codebase context not found") from exc
+    except AnalysisError as exc:
+        raise fastapi.HTTPException(status_code=422, detail=str(exc)) from exc

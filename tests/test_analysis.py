@@ -157,3 +157,50 @@ def test_routes_reject_bad_url_and_return_generated_questions(monkeypatch, analy
         assert result.status_code == 200
         assert result.json()["session_id"] == "test"
         assert client.get("/sessions/does-not-exist/questions").status_code == 404
+
+
+def test_saved_context_can_be_retrieved_without_rerunning_agent(tmp_path, monkeypatch, analysis):
+    source = tmp_path / "repo"
+    source.mkdir()
+    (source / "app.py").write_text("source")
+    monkeypatch.setattr(loader, "DATA_DIR", tmp_path / "data")
+    monkeypatch.setattr(agent, "ask_gemini", lambda bundle, role: analysis)
+    result = agent.analyze(source, "Backend Engineer", "https://github.com/org/repo", "api")
+    monkeypatch.setattr(agent, "ask_gemini", lambda *args: pytest.fail("saved context must not call Gemini"))
+    app = FastAPI()
+    app.include_router(router)
+    with TestClient(app) as client:
+        response = client.get(f"/sessions/{result['session_id']}/context")
+        assert response.status_code == 200
+        context = response.json()
+        assert context["session_id"] == result["session_id"]
+        assert context["summary"] == analysis.summary
+        assert context["role"] == "Backend Engineer"
+        assert context["subdir"] == "api"
+        assert context["included_files"] == ["app.py"]
+        assert context["omitted_files"] == []
+        assert context["questions"] == analysis.model_dump()["questions"]
+
+
+@pytest.mark.parametrize("saved", ["not JSON", "{}", "[]"])
+def test_context_route_reports_invalid_saved_analysis(tmp_path, monkeypatch, saved):
+    monkeypatch.setattr(loader, "DATA_DIR", tmp_path)
+    directory = tmp_path / "broken"
+    directory.mkdir()
+    (directory / "questions").mkdir()
+    (directory / "context.json").write_text(saved)
+    app = FastAPI()
+    app.include_router(router)
+    with TestClient(app) as client:
+        response = client.get("/sessions/broken/context")
+        assert response.status_code == 422
+        assert "run a new analysis" in response.json()["detail"]
+
+
+def test_context_route_handles_missing_and_invalid_session_ids(tmp_path, monkeypatch):
+    monkeypatch.setattr(loader, "DATA_DIR", tmp_path)
+    app = FastAPI()
+    app.include_router(router)
+    with TestClient(app) as client:
+        assert client.get("/sessions/missing/context").status_code == 404
+        assert client.get("/sessions/bad%20id/context").status_code == 404
