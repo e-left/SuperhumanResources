@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4JNMTHXS8P055WAWJXW6GVH",
+  "strategy": "manual-commit",
+  "branch": "feat/flatpal-reference",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "demo-proj/.gitignore",
+    "demo-proj/.nvmrc",
+    "demo-proj/api/.env.example",
+    "demo-proj/api/package.json",
+    "demo-proj/api/prisma/migrations/202610100001_init/migration.sql",
+    "demo-proj/api/prisma/migrations/202610100002_spatial/migration.sql",
+    "demo-proj/api/prisma/migrations/migration_lock.toml",
+    "demo-proj/api/prisma/schema.prisma",
+    "demo-proj/api/prisma/seed.ts",
+    "demo-proj/api/src/fixtures.ts",
+    "demo-proj/api/tsconfig.json",
+    "demo-proj/compose.yaml",
+    "demo-proj/package.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 63219,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 759936,
+    "output_tokens": 7755,
+    "api_call_count": 22
+  }
+}

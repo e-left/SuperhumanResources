@@ -1,0 +1,104 @@
+make a new session on entire titled Making FlatPal as Project of Reference for this chat
+
+---
+
+i don't see it there, is it pushed?
+
+---
+
+no it's fine ready to do actual work?
+
+---
+
+```text
+Create FlatPal inside the existing dummy project directory, following its repository conventions.
+
+FlatPal is a fictional “Tinder for roommates” app. It is a demo codebase for our actual hackathon project: an agent analyzes source code, dependencies, commits, and developer documentation to generate an evidence-backed hiring brief, then hands that brief to an HR agent for LinkedIn candidate sourcing.
+
+Your task is to build the dummy FlatPal codebase, not the HR automation system.
+
+MVP product scope
+- Users create a roommate profile: bio, budget range, preferred area, move-in date, smoking preference, pets, and sleep schedule.
+- Users browse profile cards filtered by budget, move-in compatibility, and distance.
+- Users swipe like or pass.
+- Mutual likes create one match.
+- Matched users can open a chat.
+- Users can block another user.
+
+Use fictional seed data. Exclude apartment listings, payments, identity verification, machine-learning recommendations, and production deployment.
+
+Technology stack
+- Mobile: React Native, Expo, TypeScript, Expo Router.
+- Swipe interactions: React Native Gesture Handler and Reanimated.
+- API state: TanStack Query.
+- Backend: NestJS and TypeScript, with REST endpoints and request validation.
+- Database: PostgreSQL with PostGIS.
+- Database access: Prisma for ordinary models; parameterized SQL for PostGIS queries, with SQL migrations for spatial columns and indexes.
+- Authentication: Supabase Auth; verify its access tokens in the backend.
+- Profile photos: Supabase Storage.
+- Chat: Stream Chat; the backend controls tokens and match-based channel membership.
+- Background jobs: Redis and BullMQ for match notifications.
+- Push notifications: Expo Push Service.
+
+Check current package compatibility before implementation and pin compatible versions. Do not add more services.
+
+Implementation scope
+Create a small, coherent vertical slice:
+1. Profile onboarding.
+2. Discovery cards and like/pass interaction.
+3. Transactional mutual matching.
+4. Match list and chat integration.
+5. Background match notification.
+6. Blocking enforcement.
+
+Provide a repeatable local setup, migrations, and fictional seed profiles. Include an explicitly labeled fixture mode so the demo works without live Supabase, Stream, or Expo credentials. Keep real integration adapters and configuration examples in the repository; document what fixture mode simulates.
+
+Important behavior
+- Derive the acting user from verified authentication.
+- Repeated or simultaneous likes must not create duplicate matches.
+- Blocked users must be excluded from discovery and denied further chat access.
+- Never expose provider secrets in the mobile app or commit credentials.
+- Use bounded external-call timeouts and bounded job retries.
+- Surface integration failures; do not silently report success.
+- Add focused tests for matching concurrency, authorization, blocking, and notification retry behavior.
+
+Developer documentation
+Include:
+- README.md: purpose, stack, quick start, fixture mode, and demo walkthrough.
+- docs/product.md: MVP flows and acceptance criteria.
+- docs/architecture.md: service responsibilities and trust boundaries.
+- docs/api.md or OpenAPI specification: endpoints and error behavior.
+- docs/data-model.md: tables, constraints, and spatial indexes.
+- docs/integrations.md: Supabase, Stream, and Expo setup and failure handling.
+- docs/roadmap.md: plausible next milestones.
+- Short architecture decision records for PostGIS, managed chat, and background jobs.
+
+Give the roadmap concrete future work:
+- Improve spatial discovery performance.
+- Improve notification delivery reliability.
+- Improve swipe animation performance on lower-end devices.
+
+Purpose of the evidence
+Make technologies visible through actual implementation, migrations, configuration, and tests—not just README claims. Distinguish implemented, simulated, and planned behavior.
+
+The HR analysis agent should be able to infer skills such as:
+- React Native gesture and animation development.
+- NestJS API development and authentication.
+- PostgreSQL transactions and PostGIS queries.
+- Redis/BullMQ job processing.
+- Third-party chat and push integration.
+
+Do not hardcode a desired hiring conclusion or embed candidate-search logic. The analysis agent must derive its recommendation from the repository.
+
+Organize work into small, descriptive commits if repository permissions allow. Do not fabricate authors, dates, or historical activity. Do not push unless instructed.
+
+Deliver the implementation, setup instructions, verification results, and a concise account of what works locally versus what requires external credentials.
+```
+
+---
+
+go on, don't overengineer or run, we just want the codebase to exist for hackathon
+
+---
+
+once this is done add commit by commit to a new branch, push it all, and open a pr
