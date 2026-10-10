@@ -1,0 +1,60 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K79VQC7SQ48F9K2EX7MACT",
+  "strategy": "manual-commit",
+  "branch": "feat/candidate-flow",
+  "checkpoints_count": 17,
+  "files_touched": [
+    ".env.example",
+    "CONTEXT.md",
+    "internal/report.html",
+    "requirements.txt",
+    "src/analysis/README.md",
+    "src/analysis/agent.py",
+    "src/analysis/models.py",
+    "src/analysis/prompt.py",
+    "src/api/app.py",
+    "src/candidates/__init__.py",
+    "src/candidates/cv.py",
+    "src/candidates/github.py",
+    "src/candidates/models.py",
+    "src/candidates/pipeline.py",
+    "src/candidates/profile.py",
+    "src/candidates/routes.py",
+    "src/candidates/store.py",
+    "src/evaluation/evaluator.py",
+    "src/evaluation/prompt.py",
+    "src/interview/prompt.py",
+    "src/interview/session.py",
+    "tests/test_analysis.py",
+    "tests/test_candidates.py",
+    "tests/test_flow.py",
+    "tests/test_llm_proxy.py",
+    "tests/test_workspace.py",
+    "web/applicants.html",
+    "web/applicants.js",
+    "web/candidates.css",
+    "web/candidates.html",
+    "web/candidates.js",
+    "web/context.css",
+    "web/context.html",
+    "web/context.js",
+    "web/index.html"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 222,
+    "cache_creation_tokens": 232694,
+    "cache_read_tokens": 64125954,
+    "output_tokens": 147718,
+    "api_call_count": 94
+  }
+}

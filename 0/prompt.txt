@@ -1,0 +1,69 @@
+Ok. analyze what I pulled. Explain how to wire this all together
+
+---
+
+Ok so, I want to do a few things. I will outline how it works. Basically, the system will accept the first name, last name and github/linkedin profile of a candidte, plus what we are looking for. Then based on the github repo link and folder, it will generate said specialized questions. Then, for each applicant, we will have a specialized video interview link, unique to them. Then after they do the interview, automatically we can see in the app in a tab all candidates & their transcripts as a list, and then we can expand. Use exactly the design style of my friend, not what I have done so far. Make a very detailed plan on how to do this
+
+---
+
+Make CV/github optional, maybe they dont exist or are inaccessible
+
+---
+
+ok. Did you test it? can yo umake sure its good?
+
+---
+
+ok, how to check the UI?
+
+---
+
+Ok claude. My friend pushed a feature in main that has a candidate lsit tab. Help me pull it and resolve any conflicts before finishing
+
+---
+
+Ok. Review the entire flow. Is it good? Does it make sense? what is happening?
+
+---
+
+Currently, what happens when a candidate finishes with their interview? Can they retake it?
+
+---
+
+Make it strict. Only one retake if it ends before the first attempt ended before the first question was answered. lets do that
+
+---
+
+Ok, re pull and integrate some ui changes my friend made
+
+---
+
+How do I delete all 3 interviews so far?
+
+---
+
+Ok here is what I want you to do. In the candidates, delete Konstantinos siskos interview, i messed up there. In the candidates, add my details (Fotios Alexandridis, fotios.alexandridis@gmail.com, github.com/e-left, https://www.linkedin.com/in/fotios-alexandridis-b925b4147/?isSelfProfile=true)
+
+---
+
+Delete the text saying who is fictional and who is not in applicant list page
+
+---
+
+From the same page, remove the "Applicant names, email addresses and social profiles"
+
+---
+
+Ok feedback is: once the interview is taken (and cannot be retaken), signal that better. Remove the button and microphone from the page and only leave the message in that case
+
+---
+
+Can you name the interviewer Ada instead of harper?
+
+---
+
+In the sidebar, remove the 01 number from Context Studio. From Candidates, remove the 02 number and add an arrow similar to Applican List
+
+---
+
+remove from candidates KOnstantinos Siskos and Fotios Alexandridis files from data
