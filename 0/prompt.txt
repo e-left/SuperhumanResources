@@ -1,0 +1,13 @@
+<image name=[Image #1] path="/var/folders/_z/k6601zz545995b0jgwddmfwm0000gp/T/TemporaryItems/NSIRD_screencaptureui_daWHWZ/Screenshot 2026-10-10 at 14.46.22.png">
+
+---
+
+</image>
+
+---
+
+[Image #1] looks much better but needs a bit of clean up and animation on the dots and stuff. I prefer this
+
+---
+
+[Image #1] looks dopeee but i think a little much unused space and we could use 1-2 more minor minimal animations
