@@ -1,0 +1,29 @@
+We need to make the Codebase context extracting agent
+
+---
+
+dont't make the agent extract project context via gh to realise what we're building why and explain. pull in 40 seconds not yet, start after timeout
+
+---
+
+basically yes, we might add a reach out agent in between, but that's the gist. the gh repo is the demo proj. make a new folder in which we'll work with the codebase context extraction agent. suggest ideas before implementation
+
+---
+
+it should be simple and straightforward, the agent should go in the codebase, extract technologies, and make generalized qs based on opitmisations and projects. i have gemini api key to run this. ready?
+
+---
+
+the gemini sould also read it not u, u help me make the agent. make the local .env i'll add once you're done with code.
+
+---
+
+git pull
+
+---
+
+ok now cook
+
+---
+
+keep cooking
