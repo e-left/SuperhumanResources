@@ -219,7 +219,7 @@ Flow is enforced in code, not only in the prompt: the LLM must call `start_quest
 
 **Evaluator**: takes the transcript, the 3 question docs and the candidate profile, and runs separately from the interview with its own context. The model judges, the code decides. Gemini (structured output, `Judgement` schema) scores each question against its reference answer on anchored bands, strictly, using only what the candidate said, and returns reasoning, covered and missed points, and word-for-word quotes. A follow-up that was asked counts toward its question; one that was not asked is never penalised. Partial answers get partial credit; no answer scores 0. Accent, filler words and STT glitches are never penalised. The profile is context only and never changes a score; it feeds the unscored `profile_alignment`. The transcript is treated as untrusted data: attempts to instruct the evaluator are ignored and listed under `red_flags`. Code (`finalize()` in `src/evaluation/evaluator.py`) then computes the overall score and recommendation, decides from the transcript which questions were answered, and verifies every quote.
 
-**Analyzer**: questions must be answerable in speech, tied to real design decisions in the repo (architecture, trade-offs, failure modes), not trivia about file names. Writes a reference `answer` and `context` for every question, and may add one follow-up that deepens the same topic. Skip vendored code, lockfiles and generated files when selecting input.
+**Analyzer**: Gemini reads the collected codebase files itself, extracts technologies and project areas, and generates 3 generalized spoken questions about relevant project experience, optimizations and engineering trade-offs. Candidates do not need to have read the repository. Writes a reference `answer` and private `context` with source paths for every question; no follow-ups in the initial implementation. Skip hidden files (including secrets), vendored code, lockfiles and generated files when selecting input. Saves the extracted context and file coverage to `data/<session>/context.json`. Run locally with `.venv/bin/python -m src.analysis --path demo-proj --role "Backend Engineer"`, or use `--repo-url` with an optional `--subdir`.
 
 ## 9. Environment
 
@@ -249,7 +249,7 @@ Work in parallel against `fixtures/` so nobody blocks on anybody.
 2. Evaluation from a fixture transcript (text only, quick win)
 3. Voice loop: agent says one line and transcribes one reply
 4. Full interview: 3 questions, transcript written
-5. Analysis: repo URL to the 3 question docs
+5. Analysis: repo URL to the 3 question docs — implemented, offline tests pass; live Gemini run pending API key
 6. Wire the three together behind the API, one web page
 7. Rehearse the demo twice on the demo repo. Record a backup video.
 
