@@ -593,6 +593,7 @@ form label[for="subdir"] {
   inset: 0;
   background-image: radial-gradient(#6e99d336 0.6px, transparent 0.6px);
   background-size: 18px 18px;
+  animation: field-drift 28s linear infinite;
   mask-image: linear-gradient(transparent, #000 25%, #000 65%, transparent);
   pointer-events: none;
 }
@@ -621,9 +622,11 @@ form label[for="subdir"] {
 .agent-workspace {
   position: relative;
   isolation: isolate;
-  flex: 1;
-  min-height: 370px;
-  margin: 0 18px;
+  flex: none;
+  width: min(390px, calc(100% - 36px));
+  height: 385px;
+  min-height: 385px;
+  margin: 0 auto;
 }
 .context-connection {
   position: absolute;
@@ -639,8 +642,11 @@ form label[for="subdir"] {
 }
 .connection-signal {
   stroke: var(--accent);
-  stroke-dasharray: 16 220;
-  opacity: 0;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 0.1 40.9;
+  opacity: 0.65;
+  animation: context-flow 7s linear infinite;
 }
 .document-back {
   position: absolute;
@@ -711,7 +717,20 @@ form label[for="subdir"] {
   width: 4px;
   height: 4px;
   background: #c5d7ef;
-  border-radius: 1px;
+  border-radius: 50%;
+  animation: source-pulse 4s ease-in-out infinite;
+}
+.source-row:nth-of-type(4) i {
+  animation-delay: 0.8s;
+}
+.source-row:nth-of-type(5) i {
+  animation-delay: 1.6s;
+}
+@keyframes source-pulse {
+  50% {
+    background: var(--accent);
+    box-shadow: 0 0 0 3px #0866ff0c;
+  }
 }
 .document-code {
   display: flex;
@@ -830,6 +849,11 @@ form label[for="subdir"] {
   width: 10px;
   height: 10px;
 }
+@keyframes field-drift {
+  to {
+    background-position: 18px 18px;
+  }
+}
 @keyframes document-float {
   50% {
     transform: translateY(-5px) rotate(1deg);
@@ -837,7 +861,7 @@ form label[for="subdir"] {
 }
 @keyframes context-flow {
   to {
-    stroke-dashoffset: -236;
+    stroke-dashoffset: -41;
   }
 }
 .agent-copy {
@@ -910,7 +934,7 @@ form label[for="subdir"] {
 }
 .agent-panel.running .connection-signal {
   opacity: 1;
-  animation: context-flow 2s linear infinite;
+  animation-duration: 2s;
 }
 .agent-panel.running .agent-status .status-dot {
   animation: blink 1.5s infinite;
@@ -1520,8 +1544,8 @@ form label[for="subdir"] {
   }
   .agent-workspace {
     flex: none;
-    height: 370px;
-    min-height: 370px;
+    height: 385px;
+    min-height: 385px;
   }
   .agent-copy h2 {
     font-size: 22px;
