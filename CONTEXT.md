@@ -31,7 +31,7 @@ Implication: the demo is live. A working end-to-end path beats any single polish
 | - | - |
 | Language | Python 3.12+ (Gradbot requirement) |
 | Backend | FastAPI, one process |
-| Frontend | Single thin browser page: mic capture, audio playback, final report. The interview itself is voice only, no question text on screen |
+| Frontend | Buildless HTML/CSS/JS Context Studio at `/`, voice interview at `/?session=<id>`, and final report. The interview itself is voice only, no question text on screen |
 | LLM | Gemini for all three agents. Model id in `GEMINI_MODEL` env var, currently `gemini-3.8-flash` |
 | Voice | Gradium. Start with Gradbot (`pip install gradbot`), fall back to raw SDK (`pip install gradium`) |
 | Code input | Public GitHub repo URL, shallow clone |
@@ -78,7 +78,7 @@ src/
   evaluation/   prompt, evaluator (Gemini judgement + code-side scoring rules), CLI
   api/          FastAPI app, routes, session store
   shared/       pydantic models for the contracts below, Gemini client
-web/            index.html + JS (mic, playback, report view)
+web/            context.html/css/js (analysis workspace), index.html (voice), report.html
 data/           runtime session files (gitignored)
 fixtures/       sample sessions: `demo` (fictional order service, includes a transcript.json) and `example` (questions about this repo's own code)
 tests/          pytest unit tests
@@ -182,10 +182,12 @@ Scores are 0 to 100. `overall_score` is the hiring score: the mean of the three 
 
 | Route | Owner | Does |
 | - | - | - |
-| `POST /analyze` `{repo_url, role}` | Teammate | writes `questions/q1..q3.md`, returns the parsed questions |
+| `GET /` | Teammate | Context Studio: repository/role form, analysis results, and sample preview |
+| `POST /analyze` `{repo_url, role, subdir?}` | Teammate | writes `questions/q1..q3.md` and `context.json`, returns the parsed questions |
 | `GET /sessions/{id}/questions` | Teammate | returns the parsed questions |
+| `GET /sessions/{id}/context` | Teammate | returns saved codebase context; 404 if missing, 422 if invalid |
 | `WS /sessions/{id}/interview` | Fotis | audio in/out, writes `transcript.json` on end, disconnect or time cap. Inputs are read from `data/<id>/`, falling back to `fixtures/<id>/` |
-| `GET /?session=<id>` | Fotis | interview page (defaults to `demo`) |
+| `GET /?session=<id>` | Fotis | voice interview page (`?session=demo` for the fixture) |
 | `POST /llm/chat/completions` | Fotis | internal: Gradbot to Gemini proxy, see section 7 |
 | `POST /sessions/{id}/evaluate` | Fotis | runs the evaluation, returns Report, writes `report.json`. Transcript is read from `data/<id>/`, falling back to `fixtures/<id>/` |
 | `GET /sessions/{id}/report` | Fotis | returns the saved Report, 404 until one exists |

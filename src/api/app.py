@@ -54,5 +54,11 @@ def report(session_id: str) -> Report:
     return found
 
 
-# Serves web/index.html at / and Gradbot's audio worklet under /static/js.
+@app.get("/", include_in_schema=False)
+def workspace(session: str | None = None):
+    page = "index.html" if session is not None else "context.html"
+    return fastapi.responses.FileResponse(ROOT / "web" / page)
+
+
+# Serves the workspace assets and Gradbot's audio worklet under /static/js.
 gradbot.routes.setup(app, static_dir=ROOT / "web")

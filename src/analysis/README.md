@@ -53,6 +53,21 @@ The FastAPI app also exposes `POST /analyze` with
 `{"repo_url": "https://github.com/owner/repo", "role": "Backend Engineer", "subdir": ""}`
 and `GET /sessions/<session_id>/questions`.
 
+## Context Studio
+
+Start `.venv/bin/uvicorn src.api.app:app` and open `http://localhost:8000/`.
+The workspace accepts a public GitHub repository, hiring role, and optional
+project directory. It shows the saved technology map, project areas, three
+questions with reference answers, and included/omitted source files. You can
+export the context as JSON or copy its session ID. The **Explore a sample**
+button shows a labeled illustrative preview without calling Gemini.
+
+`GET /sessions/<session_id>/context` returns the saved `context.json` analysis.
+The workspace remembers its session in `/?context=<session_id>` so refreshing
+or reopening the link loads saved context instead of generating it again.
+Voice interviews remain at `/?session=<session_id>`; add the actual candidate
+profile to `data/<session_id>/candidate.md` before opening an interview.
+
 Collection skips hidden files/directories (including `.env` and `.git`), obvious
 credential filenames, symlinks, vendored/generated files, and lockfiles. It sends
 up to 150 supported text files, 80 KB per file, 600 KB total. Budget exclusions

@@ -58,7 +58,7 @@ def question_docs(result: CodebaseAnalysis) -> dict[str, str]:
     return docs
 
 
-def analyze(root: Path, role: str = "Software Engineer", repo_url: str | None = None) -> dict:
+def analyze(root: Path, role: str = "Software Engineer", repo_url: str | None = None, subdir: str = "") -> dict:
     if not role.strip() or len(role) > 200:
         raise AnalysisError("role must be between 1 and 200 characters")
     bundle = collect_files(root)
@@ -73,7 +73,7 @@ def analyze(root: Path, role: str = "Software Engineer", repo_url: str | None = 
         for name, doc in docs.items():
             (directory / "questions" / name).write_text(doc, encoding="utf-8")
         context = {
-            "session_id": session_id, "repo_url": repo_url, "role": role,
+            "session_id": session_id, "repo_url": repo_url, "role": role, "subdir": subdir,
             "model": os.environ.get("GEMINI_MODEL"),
             "included_files": [file["path"] for file in bundle["files"]],
             "omitted_files": bundle["omitted_files"], **result.model_dump(),
@@ -87,10 +87,20 @@ def analyze_github(repo_url: str, role: str, subdir: str = "") -> dict:
     with tempfile.TemporaryDirectory(prefix="codebase-analysis-") as temporary:
         root = Path(temporary) / "repo"
         clone(repo_url, root)
-        return analyze(project_root(root, subdir), role, repo_url)
+        return analyze(project_root(root, subdir), role, repo_url, subdir)
 
 
 def load_questions(session_id: str) -> dict:
     directory = loader.session_dir(session_id)
     questions = [loader.parse_question(f"q{i}", (directory / "questions" / f"q{i}.md").read_text(encoding="utf-8")) for i in range(1, 4)]
     return {"session_id": session_id, "questions": [question.model_dump() for question in questions]}
+
+
+def load_context(session_id: str) -> dict:
+    directory = loader.session_dir(session_id)
+    try:
+        context = json.loads((directory / "context.json").read_text(encoding="utf-8"))
+        CodebaseAnalysis.model_validate(context)
+    except (ValueError, UnicodeError) as exc:
+        raise AnalysisError("saved codebase context is invalid; run a new analysis") from exc
+    return context
