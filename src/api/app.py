@@ -75,5 +75,10 @@ def workspace(session: str | None = None):
     return fastapi.responses.FileResponse(ROOT / "web" / page)
 
 
+@app.get("/applicants", include_in_schema=False)
+def applicants():
+    return fastapi.responses.FileResponse(ROOT / "web" / "applicants.html")
+
+
 # Serves the workspace assets and Gradbot's audio worklet under /static/js.
 gradbot.routes.setup(app, static_dir=ROOT / "web")
