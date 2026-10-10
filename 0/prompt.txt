@@ -1,0 +1,9 @@
+GUI for context form codebase: pull, new branch for that based on my last merged pr, cook a ui that matches the agentic futuristic motion ai sutomation stuff we're building
+
+---
+
+i generally really like the diraction, not a fan of the color and logo. ask me qs
+
+---
+
+[Image #1] revesr engineer the ui based on the feel of this image
