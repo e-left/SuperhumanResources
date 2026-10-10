@@ -1,17 +1,1 @@
-new branch,  [Image #1] add a button under context studio saying applicant's list mock data from people that don't exist with first last name gitbub username and linked in
-
----
-
-add fake candidates, and myself siskos-k
-
----
-
-[Image #1]
-
----
-
-https://www.linkedin.com/in/siskos-k/
-
----
-
-add mail, and use my konstantinos.siscos@gmail.com . rest can have random mails
+open the pr for review
