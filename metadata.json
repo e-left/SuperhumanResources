@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4JPKAV4W39D2VBHGMAV7F0D",
+  "strategy": "manual-commit",
+  "branch": "feat/flatpal-reference",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "demo-proj/README.md",
+    "demo-proj/api/test/auth.test.ts",
+    "demo-proj/api/test/integrations.test.ts",
+    "demo-proj/api/test/providers.test.ts",
+    "demo-proj/compose.test.yaml",
+    "demo-proj/docs/adr/001-postgis.md",
+    "demo-proj/docs/adr/002-managed-chat.md",
+    "demo-proj/docs/adr/003-background-jobs.md",
+    "demo-proj/docs/api.md",
+    "demo-proj/docs/architecture.md",
+    "demo-proj/docs/compatibility.md",
+    "demo-proj/docs/data-model.md",
+    "demo-proj/docs/integrations.md",
+    "demo-proj/docs/product.md",
+    "demo-proj/docs/roadmap.md",
+    "demo-proj/docs/verification.md",
+    "demo-proj/mobile/package.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 23489,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 435712,
+    "output_tokens": 12918,
+    "api_call_count": 6
+  }
+}
