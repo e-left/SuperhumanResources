@@ -3,6 +3,7 @@
 const $ = (id) => document.getElementById(id);
 const form = $("context-form");
 let context = null;
+let candidate = null; // the candidate this context was prepared for, if any
 let sample = false;
 let busy = false;
 let timer = null;
@@ -136,8 +137,8 @@ function setBusy(value) {
   $("example-button").disabled = value;
   $("agent-panel").setAttribute("aria-busy", String(value));
   $("analyze-button").querySelector("span").textContent = value
-    ? "Generating context…"
-    : "Generate context";
+    ? "Preparing interview…"
+    : "Prepare interview";
   clearInterval(timer);
   $("elapsed").textContent = "";
   if (value) {
@@ -233,10 +234,16 @@ function render(data, isSample = false) {
         el("h3", "", question.question),
       );
       card.append(title);
-      for (const [label, text] of [
+      const sections = [
         ["Reference answer", question.answer],
         ["Codebase context", question.context],
-      ]) {
+      ];
+      if (question.followup)
+        sections.push([
+          "Follow-up",
+          `${question.followup.question}\n\nReference answer: ${question.followup.answer}`,
+        ]);
+      for (const [label, text] of sections) {
         const details = el("details");
         const content = el("div", "question-detail");
         content.append(el("p", "", text));
@@ -261,10 +268,19 @@ function render(data, isSample = false) {
     $("interview-link").href =
       `/?session=${encodeURIComponent(data.session_id)}`;
   $("handoff-note").replaceChildren();
+  $("copy-link-button").hidden = isSample || !candidate;
+  $("candidates-link").hidden = isSample || !candidate;
   if (isSample)
     $("handoff-note").textContent =
-      "Generate real context from a public repository to create an interview session.";
-  else
+      "Prepare an interview from a public repository to create a candidate link.";
+  else if (candidate) {
+    document.querySelector("#handoff h3").textContent =
+      `${candidate.first_name} ${candidate.last_name}’s interview is ready.`;
+    $("handoff-note").append(
+      document.createTextNode("Their personal link: "),
+      el("code", "", interviewUrl(data.session_id)),
+    );
+  } else
     $("handoff-note").append(
       document.createTextNode("Before starting, add the candidate profile to "),
       el("code", "", `data/${data.session_id}/candidate.md`),
@@ -283,10 +299,34 @@ function render(data, isSample = false) {
   );
 }
 
+function interviewUrl(sessionId) {
+  return `${location.origin}/?session=${encodeURIComponent(sessionId)}`;
+}
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Poll until the candidate's profile and questions are written.
+async function waitUntilPrepared(sessionId) {
+  for (;;) {
+    const detail = await request(
+      `/api/candidates/${encodeURIComponent(sessionId)}`,
+    );
+    const { status, stage, error } = detail.summary;
+    if (status === "failed")
+      throw new Error(error || "The interview could not be prepared.");
+    if (status !== "preparing") return detail;
+    if (stage) $("agent-status-text").textContent = `${stage}…`;
+    await sleep(2000);
+  }
+}
+
 function remember(key, value) {
   const url = new URL(location.href);
   url.searchParams.delete("context");
   url.searchParams.delete("sample");
+  // A pre-fill from the Applicant's list has done its job once a session exists.
+  for (const name of ["first_name", "last_name", "github"])
+    url.searchParams.delete(name);
   url.searchParams.set(key, value);
   history.replaceState(null, "", url);
 }
@@ -298,6 +338,20 @@ form.addEventListener("submit", async (event) => {
   const repo_url = $("repo-url").value.trim();
   const role = $("role").value.trim();
   const subdir = $("subdir").value.trim();
+  const firstName = $("first-name").value.trim();
+  const lastName = $("last-name").value.trim();
+  const githubProfile = $("github-profile").value.trim();
+  const cvFile = $("cv-file").files[0];
+  for (const [field, value, message] of [
+    ["first-name", firstName, "Enter the candidate’s first name."],
+    ["last-name", lastName, "Enter the candidate’s last name."],
+  ]) {
+    if (!value) {
+      $(field).setCustomValidity(message);
+      $(field).reportValidity();
+      return;
+    }
+  }
   if (
     !/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/?$/.test(
       repo_url,
@@ -314,40 +368,44 @@ form.addEventListener("submit", async (event) => {
     $("role").reportValidity();
     return;
   }
+  // Read the form before disabling it: disabled fields are left out of FormData.
+  const body = new FormData();
+  body.set("first_name", firstName);
+  body.set("last_name", lastName);
+  body.set("role", role);
+  body.set("looking_for", $("looking-for").value.trim());
+  body.set("repo_url", repo_url);
+  body.set("subdir", subdir);
+  body.set("github_profile", githubProfile);
+  if (cvFile) body.set("cv_file", cvFile);
   setBusy(true);
   context = null;
+  candidate = null;
   $("results").hidden = true;
   $("output-actions").hidden = true;
   $("empty-output").hidden = false;
   $("output-badge").textContent = "AGENT WORKING";
   $("output-subtitle").textContent =
-    "Building a new foundation from your repository.";
+    "Building a new foundation from your candidate and your repository.";
   setAgent(
     "running",
     "Finding your signal.",
-    "Reading source files and generating role-specific context. This can take up to a few minutes.",
-    "Analysis requested · waiting for the codebase agent.",
+    "Reading the candidate’s profile and your source files, then writing questions for them. This can take a minute or two.",
+    "Interview requested · waiting for the agents.",
   );
   try {
-    const result = await request("/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ repo_url, role, subdir }),
-    });
+    const created = await request("/api/candidates", { method: "POST", body });
     if (
-      !result ||
-      typeof result.session_id !== "string" ||
-      !/^[a-f0-9]{32}$/.test(result.session_id)
+      !created ||
+      typeof created.session_id !== "string" ||
+      !/^[a-f0-9]{32}$/.test(created.session_id)
     )
-      throw new Error("The server did not return a valid analysis session.");
-    // Remember the session before fetching context, so a failed read can be recovered on refresh.
-    remember("context", result.session_id);
-    const data = validateContext(
-      await request(
-        `/sessions/${encodeURIComponent(result.session_id)}/context`,
-      ),
-      result.session_id,
-    );
+      throw new Error("The server did not return a valid candidate session.");
+    // Remember the session before waiting, so a refresh can pick it up again.
+    remember("context", created.session_id);
+    const detail = await waitUntilPrepared(created.session_id);
+    candidate = detail.record;
+    const data = validateContext(detail.context, created.session_id);
     render(data);
     $("output-title").tabIndex = -1;
     $("output-title").focus({ preventScroll: true });
@@ -364,8 +422,40 @@ form.addEventListener("submit", async (event) => {
   }
 });
 
-for (const field of [$("repo-url"), $("role")])
+for (const field of [
+  $("repo-url"),
+  $("role"),
+  $("first-name"),
+  $("last-name"),
+  $("github-profile"),
+])
   field.addEventListener("input", () => field.setCustomValidity(""));
+$("cv-file").addEventListener("change", () =>
+  $("github-profile").setCustomValidity(""),
+);
+
+$("copy-link-button").addEventListener("click", async () => {
+  if (!context || sample) return;
+  const link = interviewUrl(context.session_id);
+  try {
+    await navigator.clipboard.writeText(link);
+    $("copy-link-button").replaceChildren(
+      icon("check"),
+      document.createTextNode("Link copied"),
+    );
+    setTimeout(
+      () =>
+        $("copy-link-button").replaceChildren(
+          icon("copy"),
+          document.createTextNode("Copy interview link"),
+        ),
+      2000,
+    );
+  } catch {
+    $("form-error").textContent = `Clipboard unavailable. Link: ${link}`;
+    $("form-error").hidden = false;
+  }
+});
 $("example-button").addEventListener("click", () => {
   $("repo-url").value = "https://github.com/e-left/SuperhumanResources";
   $("subdir").value = "demo-proj";
@@ -537,7 +627,19 @@ async function restore() {
     render(sampleContext, true);
     return;
   }
-  if (!sessionId) return;
+  if (!sessionId) {
+    // Arriving from the Applicant's list: fill in who the interview is for.
+    // Nothing is submitted, and every field stays editable.
+    const prefill = [
+      ["first_name", "first-name"],
+      ["last_name", "last-name"],
+      ["github", "github-profile"],
+    ].filter(([name]) => params.get(name));
+    for (const [name, field] of prefill)
+      $(field).value = params.get(name).slice(0, 200);
+    if (prefill.length) $("repo-url").focus();
+    return;
+  }
   if (!/^[a-f0-9]{32}$/.test(sessionId)) {
     showError(
       new Error(
@@ -554,10 +656,24 @@ async function restore() {
     "Retrieving saved codebase context.",
   );
   try {
-    const data = validateContext(
-      await request(`/sessions/${encodeURIComponent(sessionId)}/context`),
-      sessionId,
-    );
+    let data;
+    try {
+      // A candidate session: wait if it is still being prepared.
+      const detail = await waitUntilPrepared(sessionId);
+      candidate = detail.record;
+      $("first-name").value = candidate.first_name;
+      $("last-name").value = candidate.last_name;
+      $("github-profile").value = candidate.github_url || "";
+      $("looking-for").value = candidate.looking_for || "";
+      data = validateContext(detail.context, sessionId);
+    } catch (error) {
+      if (candidate) throw error;
+      // Not a candidate: a context created with the analysis route alone.
+      data = validateContext(
+        await request(`/sessions/${encodeURIComponent(sessionId)}/context`),
+        sessionId,
+      );
+    }
     $("repo-url").value = data.repo_url || "";
     $("role").value = data.role;
     $("subdir").value = data.subdir || "";

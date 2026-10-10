@@ -79,27 +79,17 @@
       <div class="nav-caption">WORKSPACE</div>
       <nav>
         <a class="nav-link active" href="/" aria-current="page"
-          ><svg><use href="#i-grid" /></svg>Context Studio<span
-            class="nav-count"
-            >01</span
-          ></a
+          ><svg><use href="#i-grid" /></svg>Context Studio</a
         >
         <a class="nav-link applicants-link" href="/applicants"
           ><svg><use href="#i-users" /></svg>Applicant's list<svg class="nav-external">
             <use href="#i-chevron" /></svg
         ></a>
-        <a class="nav-link" href="/?session=demo"
-          ><svg><use href="#i-mic" /></svg>Voice interview<svg
-            class="nav-external"
-          >
+        <a class="nav-link candidates-link" href="/candidates"
+          ><svg><use href="#i-mic" /></svg>Candidates<svg class="nav-external">
             <use href="#i-chevron" /></svg
-        ></a>
-        <a class="nav-link" href="/internal/report?session=demo"
-          ><svg><use href="#i-report" /></svg>Evaluation report<svg
-            class="nav-external"
-          >
-            <use href="#i-chevron" /></svg
-        ></a>
+          ></a
+        >
       </nav>
       <div class="pipeline-nav">
         <div class="nav-caption">THE AGENT WORKFLOW</div>
@@ -163,12 +153,77 @@
                 <svg><use href="#i-code" /></svg>
               </div>
               <div>
-                <h2>Connect your codebase</h2>
-                <p>Your code. Your role. Better questions.</p>
+                <h2>Prepare an interview</h2>
+                <p>Your candidate. Your code. Better questions.</p>
               </div>
               <span class="section-number">01 / 03</span>
             </div>
             <form id="context-form">
+              <div class="field-pair">
+                <div>
+                  <label for="first-name"
+                    >First name
+                    <span class="field-required">REQUIRED</span></label
+                  >
+                  <div class="input-wrap">
+                    <input
+                      id="first-name"
+                      name="first_name"
+                      placeholder="e.g. Sam"
+                      maxlength="80"
+                      required
+                      autocomplete="off"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label for="last-name"
+                    >Last name
+                    <span class="field-required">REQUIRED</span></label
+                  >
+                  <div class="input-wrap">
+                    <input
+                      id="last-name"
+                      name="last_name"
+                      placeholder="e.g. Rivera"
+                      maxlength="80"
+                      required
+                      autocomplete="off"
+                    />
+                  </div>
+                </div>
+              </div>
+              <label for="github-profile" class="spaced"
+                >Candidate’s GitHub profile
+                <span class="optional">Optional</span></label
+              >
+              <div class="input-wrap">
+                <svg><use href="#i-git" /></svg
+                ><input
+                  id="github-profile"
+                  name="github_profile"
+                  placeholder="https://github.com/username"
+                  maxlength="200"
+                  spellcheck="false"
+                  autocomplete="off"
+                />
+              </div>
+              <label for="cv-file" class="spaced"
+                >CV file <span class="optional">Optional · PDF, TXT or MD</span></label
+              >
+              <div class="input-wrap file-wrap">
+                <svg><use href="#i-file" /></svg
+                ><input
+                  id="cv-file"
+                  name="cv_file"
+                  type="file"
+                  accept=".pdf,.txt,.md,application/pdf,text/plain,text/markdown"
+                />
+              </div>
+              <p class="field-hint">
+                Add either or both to tailor the questions to the candidate.
+                Without them, questions are based on the role and the codebase.
+              </p>
               <label for="repo-url"
                 >GitHub repository
                 <span class="field-required">REQUIRED</span></label
@@ -210,6 +265,19 @@
                 <option value="Mobile Engineer"></option>
                 <option value="Software Engineer"></option>
               </datalist>
+              <label for="looking-for" class="spaced"
+                >What are we looking for?
+                <span class="optional">Optional</span></label
+              >
+              <div class="input-wrap textarea-wrap">
+                <textarea
+                  id="looking-for"
+                  name="looking_for"
+                  rows="3"
+                  maxlength="2000"
+                  placeholder="e.g. Someone who can own backend APIs end to end and cares about data consistency."
+                ></textarea>
+              </div>
               <label for="subdir"
                 >Project directory <span class="optional">Optional</span></label
               >
@@ -227,15 +295,16 @@
                 Focus on a subdirectory, or leave blank for the whole repo.
               </p>
               <button class="button primary" type="submit" id="analyze-button">
-                <svg><use href="#i-spark" /></svg><span>Generate context</span
+                <svg><use href="#i-spark" /></svg><span>Prepare interview</span
                 ><svg class="button-arrow"><use href="#i-arrow" /></svg>
               </button>
               <div class="form-note">
-                <span class="status-dot"></span>3 tailored questions · grounded
-                in source code
+                <span class="status-dot"></span>3 questions tailored to the
+                candidate · grounded in source code
               </div>
               <p class="privacy-note">
-                Selected source files are sent to Gemini for analysis.
+                Selected source files, the public GitHub profile and the CV are
+                sent to Gemini for analysis.
               </p>
               <div id="form-error" role="alert" hidden></div>
             </form>
@@ -524,7 +593,20 @@
                 <h3>Context is ready. Next, meet the candidate.</h3>
                 <p id="handoff-note"></p>
               </div>
-              <a class="button secondary compact" id="interview-link"
+              <button
+                class="button secondary compact"
+                id="copy-link-button"
+                type="button"
+                hidden
+              >
+                <svg><use href="#i-copy" /></svg>Copy interview link</button
+              ><a
+                class="button secondary compact"
+                id="candidates-link"
+                href="/candidates"
+                hidden
+                >View in Candidates</a
+              ><a class="button secondary compact" id="interview-link"
                 >Open interview<svg><use href="#i-arrow" /></svg
               ></a>
             </div>

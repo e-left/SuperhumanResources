@@ -7,3 +7,5 @@ python-dotenv
 pytest
 google-genai
 httpx
+python-multipart
+pypdf

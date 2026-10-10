@@ -14,11 +14,19 @@ class ProjectArea(BaseModel):
     source_files: list[str] = Field(min_length=1)
 
 
+class GeneratedFollowup(BaseModel):
+    question: str = Field(min_length=1)
+    answer: str = Field(min_length=1)
+    context: str = Field(min_length=1)
+
+
 class GeneratedQuestion(BaseModel):
     question: str = Field(min_length=1)
     answer: str = Field(min_length=1)
     context: str = Field(min_length=1)
     source_files: list[str] = Field(min_length=1)
+    # Asked by the interviewer only when it is relevant to the candidate's answer.
+    followup: GeneratedFollowup | None = None
 
 
 class CodebaseAnalysis(BaseModel):

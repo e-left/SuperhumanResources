@@ -13,6 +13,7 @@ The model judges, the code decides:
 import concurrent.futures
 import dataclasses
 import datetime
+import json
 import logging
 import os
 import pathlib
@@ -156,6 +157,19 @@ def merge(judgements: list[Judgement]) -> tuple[Judgement, dict[str, list[int]]]
     return merged, score_runs
 
 
+def _opening(session_id: str) -> dict | None:
+    """The role and what the team is looking for, when the session is a candidate."""
+    path = loader.DATA_DIR / session_id / "candidate.json"
+    try:
+        record = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    return {
+        "role": record.get("role"),
+        "what_we_are_looking_for": record.get("looking_for") or None,
+    }
+
+
 def write_decision(
     assessment: Assessment, transcript: Transcript, judgement: Judgement, model: str
 ) -> Writeup:
@@ -168,6 +182,7 @@ def write_decision(
         transcript.ended_reason,
         judgement.red_flags,
         assessment.borderline,
+        _opening(transcript.session_id),
     )
     return _generate(model, prompt.WRITEUP_SYSTEM, contents, Writeup)
 

@@ -24,6 +24,8 @@ from src.interview.recorder import TranscriptRecorder
 
 logger = logging.getLogger("interview")
 
+# The Gradium voice. This is the voice's catalogue name, not the interviewer's
+# name: she introduces herself as Ada (src/interview/prompt.py).
 VOICE = "Harper"
 # Time limit. At the wrap-up mark the interviewer is told to close after the
 # current answer; at the hard limit the session ends whatever is happening.
@@ -110,6 +112,19 @@ async def run_interview(websocket: fastapi.WebSocket, session_id: str) -> None:
     await websocket.accept()
     token = secrets.token_urlsafe(8)
     try:
+        # A candidate's link works once: not before their questions are ready,
+        # not again after a finished interview, and with a single retake only if
+        # the first attempt ended before any question was answered.
+        from src.candidates import store as candidates
+        from src.candidates.routes import interview_state
+
+        state = interview_state(session_id)
+        if state == "not_ready":
+            raise loader.SessionError("This interview is not ready yet.")
+        if state == "done":
+            raise loader.SessionError("This interview has already been completed.")
+        if state == "closed":
+            raise loader.SessionError("This interview has ended and cannot be restarted.")
         inputs = loader.load_session(session_id)
         run_kwargs = _run_kwargs(websocket.url.port or 80, token)
     except (loader.SessionError, ConfigError) as exc:
@@ -126,6 +141,9 @@ async def run_interview(websocket: fastapi.WebSocket, session_id: str) -> None:
         await websocket.close(code=4000, reason="Expected start message")
         return
 
+    if candidates.exists(session_id):
+        attempt = candidates.start_attempt(session_id)
+        logger.info("interview %s: attempt %d of %d", session_id, attempt, candidates.MAX_ATTEMPTS)
     flow = InterviewFlow(inputs.questions)
     # The proxy runs the interviewer's tool calls on this flow.
     conversation = llm_proxy.register(token, flow)
@@ -255,7 +273,10 @@ async def run_interview(websocket: fastapi.WebSocket, session_id: str) -> None:
             "interview %s ended (%s): %d turns written to %s",
             session_id, reason, len(recorder.turns), path,
         )
-        if any(turn.speaker == "candidate" for turn in recorder.turns):
+        # Evaluate unless the candidate may still retake: an attempt that dropped
+        # before any answer, with the retake unused, is not the interview yet.
+        can_retake = candidates.exists(session_id) and interview_state(session_id) == "ready"
+        if any(turn.speaker == "candidate" for turn in recorder.turns) and not can_retake:
             base_url = f"http://{websocket.url.hostname}:{websocket.url.port or 80}"
             task = asyncio.create_task(_evaluate(session_id, base_url))
             _background.add(task)

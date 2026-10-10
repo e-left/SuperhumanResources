@@ -2,16 +2,17 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import tempfile
 import uuid
 
 from src.analysis.models import CodebaseAnalysis
-from src.analysis.prompt import SYSTEM, build_prompt
+from src.analysis.prompt import CANDIDATE_SYSTEM, SYSTEM, build_prompt
 from src.analysis.repository import AnalysisError, clone, collect_files, project_root
 from src.interview import loader
 
 
-def ask_gemini(bundle: dict, role: str) -> CodebaseAnalysis:
+def ask_gemini(bundle: dict, role: str, looking_for: str = "", candidate_profile: str = "") -> CodebaseAnalysis:
     from google import genai
     from google.genai import types
 
@@ -26,9 +27,9 @@ def ask_gemini(bundle: dict, role: str) -> CodebaseAnalysis:
         ) as client:
             response = client.models.generate_content(
                 model=model,
-                contents=build_prompt(bundle, role),
+                contents=build_prompt(bundle, role, looking_for, candidate_profile),
                 config=types.GenerateContentConfig(
-                    system_instruction=SYSTEM,
+                    system_instruction=SYSTEM + (CANDIDATE_SYSTEM if candidate_profile or looking_for else ""),
                     response_mime_type="application/json",
                     response_schema=CodebaseAnalysis,
                     temperature=0.2,
@@ -49,22 +50,49 @@ def question_docs(result: CodebaseAnalysis) -> dict[str, str]:
     docs = {}
     for index, generated in enumerate(result.questions, 1):
         fields = [generated.question, generated.answer, generated.context]
+        followup = generated.followup
+        if followup is not None:
+            fields += [followup.question, followup.answer, followup.context]
         if any(not value.strip() or re.search(r"(?m)^\s*#{1,2}\s", value) for value in fields):
             raise AnalysisError("Gemini returned empty fields or unsupported Markdown headings")
         context = generated.context + "\n\nSource files: " + ", ".join(f"`{p}`" for p in generated.source_files)
         doc = f"# Question\n{generated.question}\n\n# Answer\n{generated.answer}\n\n# Context\n{context}\n"
+        if followup is not None:
+            doc += (
+                f"\n# Follow-up\n## Question\n{followup.question}\n\n"
+                f"## Answer\n{followup.answer}\n\n## Context\n{followup.context}\n"
+            )
         loader.parse_question(f"q{index}", doc)
         docs[f"q{index}.md"] = doc
     return docs
 
 
-def analyze(root: Path, role: str = "Software Engineer", repo_url: str | None = None, subdir: str = "") -> dict:
+def analyze(
+    root: Path,
+    role: str = "Software Engineer",
+    repo_url: str | None = None,
+    subdir: str = "",
+    *,
+    looking_for: str = "",
+    candidate_profile: str = "",
+    session_id: str | None = None,
+) -> dict:
+    """Analyse a codebase and save context.json plus the three question docs.
+
+    Without `session_id` a new session folder is created. With one, the output
+    is written into that existing candidate folder (src/candidates), and the
+    questions are written for that candidate.
+    """
     if not role.strip() or len(role) > 200:
         raise AnalysisError("role must be between 1 and 200 characters")
     bundle = collect_files(root)
-    result = ask_gemini(bundle, role)
+    if looking_for or candidate_profile:
+        result = ask_gemini(bundle, role, looking_for, candidate_profile)
+    else:
+        result = ask_gemini(bundle, role)
     docs = question_docs(result)
-    session_id = uuid.uuid4().hex
+    existing = session_id is not None
+    session_id = session_id or uuid.uuid4().hex
     loader.DATA_DIR.mkdir(parents=True, exist_ok=True)
     # Publish the session only after all files have been written successfully.
     with tempfile.TemporaryDirectory(dir=loader.DATA_DIR, prefix=".analysis-") as staging:
@@ -74,20 +102,31 @@ def analyze(root: Path, role: str = "Software Engineer", repo_url: str | None = 
             (directory / "questions" / name).write_text(doc, encoding="utf-8")
         context = {
             "session_id": session_id, "repo_url": repo_url, "role": role, "subdir": subdir,
+            "looking_for": looking_for,
             "model": os.environ.get("GEMINI_MODEL"),
             "included_files": [file["path"] for file in bundle["files"]],
             "omitted_files": bundle["omitted_files"], **result.model_dump(),
         }
         (directory / "context.json").write_text(json.dumps(context, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-        directory.rename(loader.DATA_DIR / session_id)
+        if existing:
+            target = loader.DATA_DIR / session_id
+            if not target.is_dir():
+                raise AnalysisError("the candidate session folder does not exist")
+            # context.json first: the questions folder is what marks the session as ready.
+            (directory / "context.json").replace(target / "context.json")
+            if (target / "questions").exists():
+                shutil.rmtree(target / "questions")
+            (directory / "questions").rename(target / "questions")
+        else:
+            directory.rename(loader.DATA_DIR / session_id)
     return load_questions(session_id)
 
 
-def analyze_github(repo_url: str, role: str, subdir: str = "") -> dict:
+def analyze_github(repo_url: str, role: str, subdir: str = "", **options) -> dict:
     with tempfile.TemporaryDirectory(prefix="codebase-analysis-") as temporary:
         root = Path(temporary) / "repo"
         clone(repo_url, root)
-        return analyze(project_root(root, subdir), role, repo_url, subdir)
+        return analyze(project_root(root, subdir), role, repo_url, subdir, **options)
 
 
 def load_questions(session_id: str) -> dict:

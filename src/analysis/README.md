@@ -81,3 +81,13 @@ Tests run offline with a mocked Gemini response:
 ```sh
 .venv/bin/python -m pytest tests/test_analysis.py
 ```
+
+## Candidate flow
+
+Context Studio now prepares an interview for one candidate: it posts the form to
+`POST /api/candidates` (`src/candidates/`), which builds the candidate's profile
+and then calls `agent.analyze_github(..., looking_for=..., candidate_profile=...,
+session_id=...)`. With those options the questions are written for that
+candidate and saved into the candidate's existing session folder; at most two of
+them get a `# Follow-up` section. Without them, `POST /analyze` and the CLI
+behave exactly as before.

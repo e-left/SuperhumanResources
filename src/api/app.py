@@ -9,6 +9,8 @@ import fastapi.responses
 import gradbot
 
 from src.analysis.routes import router as analysis_router
+from src.candidates import store as candidate_store
+from src.candidates.routes import router as candidates_router
 from src.evaluation import evaluator
 from src.interview import llm_proxy, loader
 from src.interview.session import run_interview
@@ -26,6 +28,9 @@ logging.getLogger("interview").setLevel(logging.INFO)
 app = fastapi.FastAPI(title="SuperhumanResources")
 app.include_router(llm_proxy.router)
 app.include_router(analysis_router)
+app.include_router(candidates_router)
+# Preparations cut short by a restart would otherwise stay "preparing" forever.
+candidate_store.fail_stale()
 
 
 @app.websocket("/sessions/{session_id}/interview")
@@ -66,6 +71,12 @@ def transcript(session_id: str) -> Transcript:
 @app.get("/internal/report")
 def report_page():
     return fastapi.responses.FileResponse(ROOT / "internal" / "report.html")
+
+
+# Recruiter's list of candidates, their transcripts and evaluations.
+@app.get("/candidates", include_in_schema=False)
+def candidates_page():
+    return fastapi.responses.FileResponse(ROOT / "web" / "candidates.html")
 
 
 # Context Studio at /, the candidate's voice interview at /?session=<id>.

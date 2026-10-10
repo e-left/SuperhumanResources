@@ -22,7 +22,7 @@ def _call(name, args=None, call_id="c1"):
 def test_plain_text_reply_is_just_recorded():
     conv = _conversation()
     conv.add_user("[start]")
-    assert conv.resolve("Hi Alex, I'm Harper.", []) is None
+    assert conv.resolve("Hi Alex, I'm Ada.", []) is None
     assert [m["role"] for m in conv.history] == ["user", "assistant"]
 
 
@@ -166,7 +166,7 @@ def test_cut_off_question_is_reported_and_the_model_is_told_once():
 def test_a_greeting_that_was_cut_off_is_never_restarted():
     conv = _conversation()  # no question in progress yet
     conv.begin_reply()
-    conv.note_spoken("Hi Alex, I'm Harper. How are you doing today?")
+    conv.note_spoken("Hi Alex, I'm Ada. How are you doing today?")
     conv.note_heard("Hi Alex")
     conv.add_user("each what no he's trying to reach it")
     assert conv.history[-1]["content"] == "each what no he's trying to reach it"
@@ -193,7 +193,7 @@ def test_turn_cut_before_any_word_is_still_reported():
     cuts = []
     conv.on_cut = lambda intended, heard: cuts.append(heard)
     conv.begin_reply()
-    conv.note_spoken("Hi Alex, I'm Harper. How are you doing today?")
+    conv.note_spoken("Hi Alex, I'm Ada. How are you doing today?")
     conv.add_user("Hi.")
     assert cuts == [""]
 
