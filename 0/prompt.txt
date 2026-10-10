@@ -1,1 +1,31 @@
+<environment_context>
+  <cwd>/Users/konstantinos.siskos/proj/siskos/hackathon/SuperhumanResources</cwd>
+  <shell>zsh</shell>
+  <current_date>2026-10-10</current_date>
+  <timezone>Europe/Zurich</timezone>
+  <filesystem><workspace_roots><root>/Users/konstantinos.siskos/proj/siskos/hackathon/SuperhumanResources</root></workspace_roots><permission_profile type="managed"><file_system type="restricted"><entry access="read"><special>:root</special></entry><entry access="write"><path>/Users/konstantinos.siskos/proj/siskos/hackathon/SuperhumanResources</path></entry><entry access="write"><special>:slash_tmp</special></entry><entry access="write"><special>:tmpdir</special></entry><entry access="read"><path>/Users/konstantinos.siskos/proj/siskos/hackathon/SuperhumanResources/.git</path></entry><entry access="read"><path>/Users/konstantinos.siskos/proj/siskos/hackathon/SuperhumanResources/.agents</path></entry><entry access="read"><path>/Users/konstantinos.siskos/proj/siskos/hackathon/SuperhumanResources/.codex</path></entry><entry access="read"><path>/Users/konstantinos.siskos/proj/siskos/hackathon/SuperhumanResources/.aws</path></entry></file_system></permission_profile></filesystem>
+</environment_context>
+
+---
+
 is our demo proj pushed on mian?
+
+---
+
+ok add it and open a pr?
+
+---
+
+<image name=[Image #1] path="/var/folders/_z/k6601zz545995b0jgwddmfwm0000gp/T/TemporaryItems/NSIRD_screencaptureui_SYux6O/Screenshot 2026-10-10 at 11.55.39.png">
+
+---
+
+</image>
+
+---
+
+wny is this chat not here? [Image #1]
+
+---
+
+ok how do we push to entire, do it for this chat
