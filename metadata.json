@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K1KGG89N6JK9DSGNY6JPK8",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 10,
+  "files_touched": [
+    ".env.example",
+    "CONTEXT.md",
+    "fixtures/demo/transcript.json",
+    "internal/report.html",
+    "src/api/app.py",
+    "src/api/llm_proxy.py",
+    "src/evaluation/__main__.py",
+    "src/evaluation/evaluator.py",
+    "src/evaluation/prompt.py",
+    "src/interview/flow.py",
+    "src/interview/llm_proxy.py",
+    "src/interview/prompt.py",
+    "src/interview/recorder.py",
+    "src/interview/session.py",
+    "src/shared/models.py",
+    "tests/test_evaluation.py",
+    "tests/test_flow.py",
+    "tests/test_llm_proxy.py",
+    "web/index.html",
+    "web/report.html"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 186,
+    "cache_creation_tokens": 251908,
+    "cache_read_tokens": 32826135,
+    "output_tokens": 185295,
+    "api_call_count": 84
+  }
+}

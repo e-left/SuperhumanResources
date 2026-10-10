@@ -1,0 +1,47 @@
+ok i commited stuff. now what should I do to review
+
+---
+
+Ok but wait, in the interview, there should be some intro stuff. 1-2 sentences, a hello from both. It should feel natural. DId you do that here? I dont see it in the transcript
+
+---
+
+Ok. I want u to make a complete dry run of everything and then let me look at the transcript. I want the interview to be finished and polished
+
+---
+
+Ok. I have a few feedback items.
+
+1. Enforce 10-15 minute interview limit, inform the candidate in the beginning.
+2. Ensure you give a second chance if a candidate gets a question too wrong, sometimes give a small hint if needed. Never a third chance though
+3. The Candidate should not be able to see the interview report. This is only for internal use.
+4. Based on the interview, the candidate should either be moved onwards or rejected. If moved, emphasize strenghts and points to be covered in future interviews. If rejected, provide reasononing as to why it is rejected.
+5. Polish the review, make it spotless
+
+---
+
+Also add to the plan that in case a response from the ai agent takes too long from gemini, the interviewer should have a set of predefined filler sentences to say. For example: "Mhm", "I see", "Mmm, okay" or something like that
+
+---
+
+ok, clean the previous testing runs, and tell me how to test it now from the beginning
+
+---
+
+Ok what do you think? You think that this part of the pipeline is good? Do you have any more suggestions for me?
+
+---
+
+Ok. i want to successfully pass the interview. tell me what to say
+
+---
+
+Ok u broke things. The intro "Hi sam am harper keeps playing" what did u change man. You fucked it up. Make it better, test it if it works first
+
+---
+
+Can you test with an interview of a successfull candidate, and make the process seamless and resolve any bugs that may exist? make it work perfectly. Assume the user will be in a silent place
+
+---
+
+And where is the report for this?
