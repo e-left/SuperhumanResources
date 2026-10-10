@@ -95,13 +95,6 @@ svg {
   line-height: 1.1;
   letter-spacing: -0.7px;
 }
-.brand-sub {
-  display: block;
-  font: 9px var(--sans);
-  letter-spacing: 3.5px;
-  margin-top: 6px;
-  color: var(--muted);
-}
 /* Keep the supplied mascot intact; frame its white margins in CSS. */
 .brand-mark {
   position: relative;
@@ -315,6 +308,15 @@ svg {
   justify-content: space-between;
   padding: 0 42px;
   background: #ffffff;
+}
+.topbar-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.topbar-brand {
+  font: 700 20px/1.2 var(--display);
+  letter-spacing: -0.7px;
 }
 .breadcrumb {
   display: flex;
@@ -1473,7 +1475,6 @@ form label[for="subdir"] {
     padding: 0;
     justify-content: center;
   }
-  .brand > span:last-child,
   .workspace-label,
   .nav-caption,
   .nav-link:not(.active):not(.applicants-link):not(.studio-link),
@@ -1501,7 +1502,7 @@ form label[for="subdir"] {
     margin-left: 70px;
   }
   .topbar {
-    height: 60px;
+    height: 72px;
   }
   .studio-grid {
     gap: 14px;
@@ -1536,15 +1537,8 @@ form label[for="subdir"] {
     font-size: 14px;
     gap: 10px;
   }
-  .brand > span:last-child {
-    display: block;
-  }
   .brand-mark {
     font-size: 22px;
-  }
-  .brand-sub {
-    font-size: 7px;
-    margin-top: 4px;
   }
   .sidebar nav {
     display: flex;
@@ -1567,8 +1561,14 @@ form label[for="subdir"] {
     margin-left: 0;
   }
   .topbar {
-    height: 49px;
-    padding: 0 20px;
+    height: auto;
+    min-height: 72px;
+    padding: 12px 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .topbar-brand {
+    font-size: 18px;
   }
   .topbar-right {
     gap: 12px;
