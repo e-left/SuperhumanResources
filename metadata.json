@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4JNXJQHNC27QJF3SMCSK6RR",
+  "strategy": "manual-commit",
+  "branch": "feat/flatpal-reference",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "demo-proj/api/src/app.ts",
+    "demo-proj/api/src/auth.ts",
+    "demo-proj/api/src/config.ts",
+    "demo-proj/api/src/controller.ts",
+    "demo-proj/api/src/db.ts",
+    "demo-proj/api/src/dto.ts",
+    "demo-proj/api/src/flatpal.ts",
+    "demo-proj/api/src/http.ts",
+    "demo-proj/api/src/main.ts",
+    "demo-proj/api/src/notifications.ts",
+    "demo-proj/api/src/providers.ts",
+    "demo-proj/api/src/worker.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1141,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 131584,
+    "output_tokens": 7246,
+    "api_call_count": 3
+  }
+}

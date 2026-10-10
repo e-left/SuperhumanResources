@@ -1,0 +1,51 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4JNXJQHNC27QJF3SMCSK6RR",
+  "session_id": "01a12552-4b8d-7ac2-8d51-ec8610192bf0",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T10:32:12.139826Z",
+  "branch": "feat/flatpal-reference",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "demo-proj/api/src/app.ts",
+    "demo-proj/api/src/auth.ts",
+    "demo-proj/api/src/config.ts",
+    "demo-proj/api/src/controller.ts",
+    "demo-proj/api/src/db.ts",
+    "demo-proj/api/src/dto.ts",
+    "demo-proj/api/src/flatpal.ts",
+    "demo-proj/api/src/http.ts",
+    "demo-proj/api/src/main.ts",
+    "demo-proj/api/src/notifications.ts",
+    "demo-proj/api/src/providers.ts",
+    "demo-proj/api/src/worker.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-6.1-sol",
+  "turn_id": "47f284e27755",
+  "checkpoint_transcript_start": 212,
+  "transcript_lines_at_start": 212,
+  "compact_transcript_start": 23,
+  "token_usage": {
+    "input_tokens": 1141,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 131584,
+    "output_tokens": 7246,
+    "api_call_count": 3
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-10T10:32:12.124901Z",
+    "agent_lines": 494,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 494,
+    "total_lines_changed": 494,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
