@@ -25,6 +25,33 @@ One-line pitch: "Interview candidates on the code they would actually work on."
 
 Implication: the demo is live. A working end-to-end path beats any single polished step.
 
+### Entire Graph and Brain
+
+Graph provides local code search and relationship analysis; Brain provides local project memory from code, docs, captured sessions, and authored facts. These support the coding workflow. The application still uses Gemini for repository analysis and interview questions.
+
+Install once per machine (Entire CLI is already required):
+
+```sh
+entire plugin install graph --pin v0.4.0 --yes
+entire plugin install https://github.com/entireio/entire-brain --pin v0.1.0 --yes
+```
+
+Initialize each checkout without recurring model jobs or a background service:
+
+```sh
+entire brain setup --no-backfill --no-daemon
+# If setup reports dirty_worktree, refresh explicitly without stashing work:
+entire brain refresh --worktree --agent none
+entire brain refresh index --worktree --profile full --graph-timeout 60s
+entire brain status
+```
+
+Read `.entire/agent-guide.md` for agent usage. Start substantive tasks with `entire brain brief "<task>" --json`; locate code with `entire graph search --repo . --query "<task>" --profile full`. Refresh after relevant changes because Brain reads a stored index. `entire brain init-agents --repo .` regenerates the shared guide and managed pointers in `AGENTS.md` and `CLAUDE.md`; keep custom instructions outside their managed blocks.
+
+Indexes and authored Brain facts live in Entire's user data directory, outside this repo. Do not commit or publish session transcripts, candidate data, or brain bundles. Keep team decisions in this file so teammates can recover them from a fresh checkout.
+
+Official instructions: [Graph](https://github.com/entireio/entire-graph), [Brain](https://github.com/entireio/entire-brain).
+
 ## 3. Locked decisions
 
 | Area | Decision |
@@ -37,6 +64,7 @@ Implication: the demo is live. A working end-to-end path beats any single polish
 | Code input | Public GitHub repo URL, shallow clone |
 | Storage | JSON files on disk under `data/` (gitignored). No database |
 | Auth | None |
+| Context Studio branding | White, cobalt blue, navy, supplied SuperhumanResources mascot. Hero: "HR with engineering" in dark text on line one, "superpowers." on line two. Compact layout, subtle motion, reduced-motion support |
 
 ## 4. Ownership
 
