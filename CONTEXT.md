@@ -32,7 +32,7 @@ Implication: the demo is live. A working end-to-end path beats any single polish
 | Language | Python 3.12+ (Gradbot requirement) |
 | Backend | FastAPI, one process |
 | Frontend | Single thin browser page: mic capture, audio playback, final report. The interview itself is voice only, no question text on screen |
-| LLM | Gemini for all three agents. Model id in `GEMINI_MODEL` env var. TODO: confirm which model the event credits cover |
+| LLM | Gemini for all three agents. Model id in `GEMINI_MODEL` env var, currently `gemini-3.8-flash` |
 | Voice | Gradium. Start with Gradbot (`pip install gradbot`), fall back to raw SDK (`pip install gradium`) |
 | Code input | Public GitHub repo URL, shallow clone |
 | Storage | JSON files on disk under `data/` (gitignored). No database |
@@ -80,7 +80,7 @@ src/
   shared/       pydantic models for the contracts below, Gemini client
 web/            index.html + JS (mic, playback, report view)
 data/           runtime session files (gitignored)
-fixtures/       fixtures/demo: sample candidate.md, questions/q1..q3.md and transcript.json for working in parallel
+fixtures/       sample sessions: `demo` (fictional order service, includes a transcript.json) and `example` (questions about this repo's own code)
 tests/          pytest unit tests
 ```
 
@@ -186,6 +186,7 @@ Scores are 0 to 100. `overall_score` is the hiring score: the mean of the three 
 | `GET /sessions/{id}/questions` | Teammate | returns the parsed questions |
 | `WS /sessions/{id}/interview` | Fotis | audio in/out, writes `transcript.json` on end, disconnect or time cap. Inputs are read from `data/<id>/`, falling back to `fixtures/<id>/` |
 | `GET /?session=<id>` | Fotis | interview page (defaults to `demo`) |
+| `POST /llm/chat/completions` | Fotis | internal: Gradbot to Gemini proxy, see section 7 |
 | `POST /sessions/{id}/evaluate` | Fotis | runs the evaluation, returns Report, writes `report.json`. Transcript is read from `data/<id>/`, falling back to `fixtures/<id>/` |
 | `GET /sessions/{id}/report` | Fotis | returns the saved Report, 404 until one exists |
 | `GET /static/report.html?session=<id>` | Fotis | report page. Add `&run=1` to run the evaluation first; the interview page links here when it finishes |
@@ -198,7 +199,8 @@ Docs: https://docs.gradium.ai (index for agents: https://docs.gradium.ai/llms.tx
 - **Gradbot** is Gradium's open-source voice agent loop, built for hackathons: streaming audio, VAD, turn-taking, interruptions, tool calls, OpenAI-compatible LLM. Repo: https://github.com/gradium-ai/gradbot
 
   - Needs Python 3.12+. Flagship English voices include Harper, Tilly, Declan (there is no "Emma"); we use `gradbot.flagship_voice("Harper")`.
-  - Gemini: `gradbot.run(llm_base_url="https://generativelanguage.googleapis.com/v1beta/openai/", llm_api_key=GEMINI_API_KEY, llm_model_name=GEMINI_MODEL, gradium_api_key=..., session_config=...)`.
+  - Gemini does **not** work when Gradbot calls it directly: Gemini's OpenAI-compatible stream omits `index` on tool calls (Gradbot drops them) and Gemini 3 needs its thought signatures echoed back. So Gradbot's `llm_base_url` points at our own proxy, `POST /llm/chat/completions` in `src/api/llm_proxy.py`, which fixes both, sets `reasoning_effort` to `low` (override with `GEMINI_REASONING_EFFORT`) and retries 429/503. Also: no trailing slash on the base URL, Gradbot appends `/chat/completions`.
+  - Verified on 10 Oct with `gemini-3.8-flash`: full 3-question voice interview in about 2 minutes, replies start roughly 3 to 4 seconds after the candidate stops.
   - `gradbot.websocket.handle_session` forwards transcripts to the browser but has no server-side hook, so `src/interview/session.py` runs its own loop on `gradbot.run` and records `stt_text` (candidate) and `tts_text` (agent) messages.
   - `gradbot.routes.setup(app, static_dir="web")` serves the page and the browser audio worklet (`/static/js/`), so mic capture and playback are not hand-written.
 - Raw SDK fallback:
@@ -265,4 +267,3 @@ Risks: venue noise and wifi (bring a headset, keep a recorded run), STT turn-tak
 
 - Judging criteria and submission format
 - Teammate name, demo repo URL
-- Gemini model id covered by the event credits

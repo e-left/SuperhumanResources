@@ -1,0 +1,9 @@
+# Python 3.12+ (gradbot requirement)
+gradbot
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
+pytest
+google-genai
+httpx

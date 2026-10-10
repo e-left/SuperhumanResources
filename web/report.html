@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SuperhumanResources — Report</title>
+  <style>
+    :root {
+      --bg: #0f1115; --card: #171a21; --border: #262a33; --fg: #e8eaed; --muted: #8b919c;
+      --accent: #5b8def; --good: #3fb97a; --mid: #e0a83a; --bad: #e5484d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--fg);
+      font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    main { max-width: 820px; margin: 0 auto; padding: 32px 16px 64px; }
+    h1 { font-size: 1.5rem; margin: 0; }
+    h2 { font-size: 1.05rem; margin: 0 0 10px; }
+    h3 { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 16px 0 6px; }
+    p { margin: 0 0 10px; }
+    ul { margin: 0; padding-left: 20px; }
+    .muted { color: var(--muted); }
+    .small { font-size: .875rem; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-top: 16px; }
+    .head { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+    .score {
+      width: 104px; height: 104px; border-radius: 50%; flex: none; display: grid; place-items: center;
+      border: 6px solid var(--tone); font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums;
+    }
+    .pill {
+      display: inline-block; padding: 2px 12px; border-radius: 999px; font-size: .875rem; font-weight: 600;
+      color: var(--tone); border: 1px solid var(--tone);
+    }
+    .good { --tone: var(--good); } .mid { --tone: var(--mid); } .bad { --tone: var(--bad); }
+    .banner { border-left: 4px solid var(--tone); background: var(--card); border-radius: 8px; padding: 12px 16px; margin-top: 16px; }
+    .qhead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+    .qscore { font-size: 1.4rem; font-weight: 700; color: var(--tone); font-variant-numeric: tabular-nums; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+    @media (max-width: 600px) { .cols { grid-template-columns: 1fr; } }
+    .asked { font-weight: 600; }
+    blockquote { margin: 6px 0; padding: 4px 12px; border-left: 3px solid var(--border); color: var(--muted); font-style: italic; }
+    button {
+      background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 10px 18px;
+      font: inherit; font-weight: 600; cursor: pointer;
+    }
+    button:disabled { opacity: .5; cursor: default; }
+    footer { margin-top: 28px; }
+  </style>
+</head>
+<body>
+  <main id="root"><p class="muted">Loading…</p></main>
+
+  <script>
+    const sessionId = new URLSearchParams(location.search).get('session') || 'demo';
+    const autoRun = new URLSearchParams(location.search).get('run') === '1';
+    const root = document.getElementById('root');
+    const LABELS = { strong_hire: 'Strong hire', hire: 'Hire', no_hire: 'No hire' };
+
+    // All report text is set through textContent: it comes from an LLM and a candidate.
+    function el(tag, props = {}, children = []) {
+      const node = document.createElement(tag);
+      for (const [key, value] of Object.entries(props)) {
+        if (key === 'class') node.className = value; else node[key] = value;
+      }
+      for (const child of [].concat(children)) {
+        if (child) node.append(child);
+      }
+      return node;
+    }
+    const tone = (score) => (score >= 80 ? 'good' : score >= 60 ? 'mid' : 'bad');
+
+    function list(title, items, emptyText) {
+      if (!items.length && !emptyText) return null;
+      return el('div', {}, [
+        el('h3', { textContent: title }),
+        items.length
+          ? el('ul', {}, items.map((text) => el('li', { textContent: text })))
+          : el('p', { class: 'muted small', textContent: emptyText }),
+      ]);
+    }
+
+    function questionCard(q) {
+      const answered = q.status === 'answered';
+      const meta = [answered ? 'Answered' : 'Not answered', q.followup_asked ? 'follow-up asked' : null]
+        .filter(Boolean).join(' · ');
+      return el('section', { class: `card ${tone(q.score)}` }, [
+        el('div', { class: 'qhead' }, [
+          el('h2', { textContent: q.question_id.toUpperCase() }),
+          el('span', { class: 'qscore', textContent: `${q.score}/100` }),
+        ]),
+        el('p', { class: 'muted small', textContent: meta }),
+        el('p', { class: 'asked', textContent: q.question }),
+        el('p', { textContent: q.reasoning }),
+        el('div', { class: 'cols' }, [
+          list('Covered', q.covered_points),
+          list('Missed', q.missed_points),
+          list('Strengths', q.strengths),
+          list('Gaps', q.gaps),
+        ]),
+        q.evidence.length ? el('div', {}, [
+          el('h3', { textContent: 'What the candidate said' }),
+          ...q.evidence.map((quote) => el('blockquote', { textContent: `“${quote}”` })),
+        ]) : null,
+      ]);
+    }
+
+    function render(r) {
+      const t = tone(r.overall_score);
+      const alignment = r.profile_alignment;
+      root.replaceChildren(
+        el('div', { class: `head ${t}` }, [
+          el('div', { class: 'score', textContent: r.overall_score }),
+          el('div', {}, [
+            el('h1', { textContent: r.candidate_name }),
+            el('p', { class: 'muted small', textContent: `Hiring score out of 100 · session ${r.session_id}` }),
+            el('span', { class: 'pill', textContent: LABELS[r.recommendation] || r.recommendation }),
+          ]),
+        ]),
+        !r.interview_complete ? el('div', { class: 'banner bad' }, [
+          el('strong', { textContent: 'Incomplete interview. ' }),
+          'Unanswered questions score 0 and weigh heavily on the result.',
+        ]) : null,
+        r.needs_human_review ? el('div', { class: 'banner mid' }, [
+          el('strong', { textContent: 'Needs human review' }),
+          el('ul', { class: 'small' }, r.review_reasons.map((text) => el('li', { textContent: text }))),
+        ]) : null,
+        el('section', { class: 'card' }, [
+          el('h2', { textContent: 'Summary' }),
+          el('p', { textContent: r.summary }),
+          el('h3', { textContent: 'Reasoning' }),
+          el('p', { textContent: r.reasoning }),
+          r.communication ? el('h3', { textContent: 'Communication (not scored)' }) : null,
+          r.communication ? el('p', { textContent: r.communication }) : null,
+        ]),
+        ...r.per_question.map(questionCard),
+        el('section', { class: 'card' }, [
+          el('h2', { textContent: 'Beyond the score' }),
+          el('div', { class: 'cols' }, [
+            list('Profile claims confirmed', alignment.confirmed, 'Nothing in the interview bears on the profile.'),
+            list('Profile claims contradicted', alignment.contradicted, 'None.'),
+          ]),
+          list('Red flags', r.red_flags, 'None.'),
+          list('Probe in the next round', r.suggested_next_steps, 'None suggested.'),
+        ]),
+        el('footer', { class: 'muted small' }, [
+          el('p', { textContent: 'This report is advisory. It grades one short voice interview against reference answers; a person makes the hiring decision.' }),
+          el('p', { textContent: `Generated ${new Date(r.generated_at).toLocaleString()} with ${r.model}.` }),
+        ]),
+      );
+    }
+
+    async function runEvaluation() {
+      root.replaceChildren(el('p', { class: 'muted', textContent: 'Evaluating the interview…' }));
+      const response = await fetch(`/sessions/${sessionId}/evaluate`, { method: 'POST' });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.detail || 'Evaluation failed');
+      render(body);
+    }
+
+    function showError(message, canRun) {
+      const button = el('button', { textContent: 'Run evaluation' });
+      button.addEventListener('click', () => runEvaluation().catch((e) => showError(e.message, true)));
+      root.replaceChildren(el('p', { textContent: message }), canRun ? button : null);
+    }
+
+    async function load() {
+      if (autoRun) {
+        history.replaceState(null, '', `?session=${encodeURIComponent(sessionId)}`);
+        return runEvaluation();
+      }
+      const response = await fetch(`/sessions/${sessionId}/report`);
+      if (response.status === 404) return showError(`No report yet for session “${sessionId}”.`, true);
+      if (!response.ok) throw new Error('Could not load the report');
+      render(await response.json());
+    }
+
+    load().catch((e) => showError(e.message, true));
+  </script>
+</body>
+</html>

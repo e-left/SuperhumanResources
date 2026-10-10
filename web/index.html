@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SuperhumanResources — Interview</title>
+  <style>
+    :root { --bg: #0f1115; --fg: #e8eaed; --muted: #8b919c; --accent: #5b8def; --danger: #e5484d; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      background: var(--bg); color: var(--fg);
+      font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    main { text-align: center; padding: 16px; max-width: 420px; }
+    h1 { font-size: 1.25rem; font-weight: 600; margin: 0 0 4px; }
+    p { color: var(--muted); margin: 0 0 32px; }
+    button {
+      width: 148px; height: 148px; border-radius: 50%; border: 0; cursor: pointer;
+      background: var(--accent); color: #fff; font: inherit; font-weight: 600;
+      transition: transform .15s, background .15s;
+    }
+    button:hover { transform: scale(1.03); }
+    button.live { background: var(--danger); animation: pulse 2s infinite; }
+    button:disabled { opacity: .5; cursor: default; transform: none; animation: none; }
+    @keyframes pulse { 50% { box-shadow: 0 0 0 18px rgba(229, 72, 77, 0); } 0% { box-shadow: 0 0 0 0 rgba(229, 72, 77, .5); } }
+    #status { margin-top: 28px; min-height: 1.5em; color: var(--muted); }
+    #status.error { color: var(--danger); }
+    #status a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Technical interview</h1>
+    <p>Voice only. Use a headset if you can.</p>
+    <button id="btn">Start</button>
+    <div id="status"></div>
+  </main>
+
+  <script src="static/js/opus-encoder.js"></script>
+  <script src="static/js/audio-processor.js"></script>
+  <script src="static/js/synced-audio-player.js"></script>
+  <script>
+    const sessionId = new URLSearchParams(location.search).get('session') || 'demo';
+    const btn = document.getElementById('btn');
+    const statusEl = document.getElementById('status');
+    let ws = null, player = null, live = false, finished = false;
+
+    function setStatus(text, isError = false) {
+      statusEl.textContent = text;
+      statusEl.className = isError ? 'error' : '';
+    }
+
+    function showReportLink() {
+      // The transcript is already saved when this event arrives; the report page runs the evaluation.
+      const link = document.createElement('a');
+      link.href = `static/report.html?session=${encodeURIComponent(sessionId)}&run=1`;
+      link.textContent = 'Evaluate and view report';
+      statusEl.append(document.createElement('br'), link);
+    }
+
+    function teardown() {
+      live = false;
+      if (player) { player.stop(); player = null; }
+      ws = null;
+      btn.classList.remove('live');
+      btn.textContent = 'Start';
+      btn.disabled = false;
+    }
+
+    async function start() {
+      finished = false;
+      player = new SyncedAudioPlayer({
+        basePath: 'static/js',
+        sampleRate: 24000,
+        echoCancellation: true,
+        onEncodedAudio: (data) => {
+          if (live && ws && ws.readyState === WebSocket.OPEN) ws.send(data);
+        },
+        onEvent: (type, msg) => {
+          if (type === 'interview_finished') {
+            finished = true;
+            live = false;  // stop sending mic audio; let the goodbye play out
+            setStatus(msg.completed ? 'Interview finished. Thank you.' : 'Interview ended.');
+            showReportLink();
+          }
+        },
+        onError: (error) => setStatus(error.message, true),
+      });
+
+      try {
+        await player.start();
+      } catch (error) {
+        setStatus('Microphone access denied', true);
+        player = null;
+        return;
+      }
+
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${protocol}//${location.host}/sessions/${sessionId}/interview`);
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ type: 'start' }));
+        live = true;
+        btn.classList.add('live');
+        btn.textContent = 'End';
+        setStatus('Interview in progress');
+      };
+      ws.onmessage = (event) => player && player.handleMessage(event.data);
+      ws.onerror = () => setStatus('Connection error', true);
+      ws.onclose = () => {
+        if (!finished && statusEl.className !== 'error') setStatus('Disconnected');
+        teardown();
+      };
+    }
+
+    function stop() {
+      if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'stop' }));
+      live = false;
+      btn.disabled = true;
+      setStatus('Ending…');
+    }
+
+    btn.addEventListener('click', () => (ws ? stop() : start()));
+  </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "session_id": "demo",
+  "candidate_name": "Alex Meier",
+  "started_at": "2026-10-10T13:00:00+00:00",
+  "ended_at": "2026-10-10T13:04:10+00:00",
+  "turns": [
+    {"speaker": "agent", "question_id": null, "followup": false, "text": "Hi Alex, I'm Harper. I have three questions about the codebase you would work on.", "t": 0.0},
+    {"speaker": "candidate", "question_id": null, "followup": false, "text": "Hi Harper, sounds good.", "t": 6.2},
+    {"speaker": "agent", "question_id": "q1", "followup": false, "text": "Our order service retries a payment call when the provider times out. What could go wrong with that, and how would you make it safe?", "t": 8.9},
+    {"speaker": "candidate", "question_id": "q1", "followup": false, "text": "So the main problem is that a timeout doesn't tell you the payment failed. The provider might have charged the card and we just never got the response, so if we retry blindly we can charge the customer twice. What I'd do is send an idempotency key with every attempt, the same key for all retries of one order, so the provider can deduplicate. And I'd limit the retries, like three attempts with exponential backoff and some jitter so we don't hammer them.", "t": 18.4},
+    {"speaker": "agent", "question_id": "q1", "followup": true, "text": "Thanks. Where would you store the idempotency key, and when would you write it?", "t": 52.0},
+    {"speaker": "candidate", "question_id": "q1", "followup": true, "text": "In the orders database, and I'd write it before making the call, in the same transaction where I mark the order as payment pending. If you only keep it in memory and the process crashes, you lose the key and you're back to the double charge.", "t": 58.3},
+    {"speaker": "agent", "question_id": "q2", "followup": false, "text": "Got it. We publish an event to a queue after saving an order to the database. How would you make sure the two never get out of sync?", "t": 79.5},
+    {"speaker": "candidate", "question_id": "q2", "followup": false, "text": "Um, I think I'd just wrap both in a try except, and if the publish fails I would retry it a few times. Usually the queue is pretty reliable so it should be fine. Maybe log an error if it still fails so someone can look at it.", "t": 90.1},
+    {"speaker": "agent", "question_id": "q3", "followup": false, "text": "Thanks. One endpoint in this service got slow as the orders table grew. Walk me through how you would find the cause.", "t": 112.7},
+    {"speaker": "candidate", "question_id": "q3", "followup": false, "text": "First I'd look at where the time actually goes, so traces or at least timing logs, to see if it's the database or our code. If it's the database I'd take the slow query and run explain analyze on it. With a growing table my first guess would be a missing index on the column we filter on.", "t": 123.0},
+    {"speaker": "agent", "question_id": "q3", "followup": true, "text": "Suppose it turns out to be one query per order for the line items. How would you fix that?", "t": 151.8},
+    {"speaker": "candidate", "question_id": "q3", "followup": true, "text": "That's the N plus one problem. I'd load all the line items in one query instead, with a join or with eager loading in the ORM.", "t": 158.6},
+    {"speaker": "agent", "question_id": null, "followup": false, "text": "Thank you Alex, that's everything from me. Goodbye.", "t": 172.4},
+    {"speaker": "candidate", "question_id": null, "followup": false, "text": "Thanks, bye.", "t": 176.0}
+  ]
+}
