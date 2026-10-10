@@ -1,0 +1,23 @@
+<send_user_message_question_reply>
+[{"answer":"no this is the repo, let me check again","question":"Entire Trails still returns “no read access to repo” after a fresh login. Does your access invitation specify another account or repository, or provide a special Trails URL? The interview-brief feature is already built and verified locally.","questionItemId":"[\"request_user_input_async\",\"call_Wa5Ie0zIXluabhUGXZOi7MvX\",0]"}]
+</send_user_message_question_reply>
+
+---
+
+trail it can we not?
+
+---
+
+ok check every 3 minutes and repeat until u find trail access
+
+---
+
+https://www.linkedin.com/in/siskos-k
+
+---
+
+ok trails is up, make a trail for the branch of candidate list
+
+---
+
+it's empty i want a new one
