@@ -181,6 +181,52 @@ svg {
   width: 12px;
   opacity: 0.5;
 }
+.applicants-panel {
+  padding: 24px;
+}
+.applicants-note {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 0 0 24px;
+}
+.applicants-table-wrap {
+  overflow-x: auto;
+}
+.applicants-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+.applicants-caption {
+  text-align: left;
+  color: var(--muted);
+  font-size: 11px;
+  padding-bottom: 12px;
+}
+.applicants-table th {
+  background: #f8faff;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.applicants-table th,
+.applicants-table td {
+  padding: 18px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.applicants-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.applicants-table tbody tr:hover {
+  background: #f8faff;
+}
+.applicant-handle,
+.applicant-profile {
+  color: #456d9f;
+  white-space: nowrap;
+}
 .pipeline-nav {
   margin-top: 37px;
 }
@@ -1430,19 +1476,24 @@ form label[for="subdir"] {
   .brand > span:last-child,
   .workspace-label,
   .nav-caption,
-  .nav-link:not(.active),
-  .nav-link.active .nav-count,
+  .nav-link:not(.active):not(.applicants-link):not(.studio-link),
+  .nav-link .nav-count,
+  .nav-link .nav-external,
   .pipeline-nav,
   .sidebar-bottom {
     display: none;
   }
-  .nav-link.active {
+  .nav-link.active,
+  .nav-link.applicants-link,
+  .nav-link.studio-link {
     font-size: 0;
     padding: 13px;
     justify-content: center;
     margin-top: 38px;
   }
-  .nav-link.active svg {
+  .nav-link.active svg,
+  .nav-link.applicants-link svg,
+  .nav-link.studio-link svg {
     width: 20px;
     height: 20px;
   }
@@ -1495,12 +1546,20 @@ form label[for="subdir"] {
     font-size: 7px;
     margin-top: 4px;
   }
-  .nav-link.active {
+  .sidebar nav {
+    display: flex;
+    gap: 4px;
+  }
+  .nav-link.active,
+  .nav-link.applicants-link,
+  .nav-link.studio-link {
     margin: 0;
     padding: 8px 10px;
     font-size: 10px;
   }
-  .nav-link.active svg {
+  .nav-link.active svg,
+  .nav-link.applicants-link svg,
+  .nav-link.studio-link svg {
     width: 14px;
     height: 14px;
   }
@@ -1653,6 +1712,14 @@ form label[for="subdir"] {
   }
   .output-actions .compact {
     font-size: 10px;
+  }
+}
+@media (max-width: 420px) {
+  .nav-link.active,
+  .nav-link.applicants-link,
+  .nav-link.studio-link {
+    font-size: 0;
+    gap: 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {
