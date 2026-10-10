@@ -8,6 +8,7 @@ import fastapi
 import gradbot
 
 from src.api import llm_proxy
+from src.analysis.routes import router as analysis_router
 from src.evaluation import evaluator
 from src.interview import loader
 from src.interview.session import run_interview
@@ -24,6 +25,7 @@ logging.getLogger("interview").addHandler(_handler)
 logging.getLogger("interview").setLevel(logging.INFO)
 app = fastapi.FastAPI(title="SuperhumanResources")
 app.include_router(llm_proxy.router)
+app.include_router(analysis_router)
 
 
 @app.websocket("/sessions/{session_id}/interview")
