@@ -1,0 +1,193 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4JQVN4TKQ86YWEXBSNJXAKX",
+  "session_id": "df4d927c-3404-4cf1-846e-5eb44462e14f",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T11:06:10.583462Z",
+  "branch": "main",
+  "checkpoints_count": 10,
+  "save_step_count": 10,
+  "files_touched": [
+    "CONTEXT.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "79af3fe60417",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 142,
+    "cache_creation_tokens": 196353,
+    "cache_read_tokens": 8440061,
+    "output_tokens": 91051,
+    "api_call_count": 61
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_01SuFJZ7s9cgJDi5KWW7CZdo",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "browse"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "79af3fe60417",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 377,
+        "end": 378,
+        "entry_ids": [
+          "e5aa28e4-9b17-4379-8eba-751412483c15"
+        ],
+        "tool_use_id": "toolu_01SuFJZ7s9cgJDi5KWW7CZdo"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01SuFJZ7s9cgJDi5KWW7CZdo"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: browse",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 10
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-10T11:06:10.541018Z",
+    "agent_lines": 93,
+    "agent_removed": 59,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 93,
+    "total_lines_changed": 152,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 19,
+      "agent_lines_removed": 15
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1036,
+      "agent_lines_removed": 55
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1031,
+      "agent_lines_removed": 55
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1031,
+      "agent_lines_removed": 55
+    },
+    {
+      "checkpoint_number": 6,
+      "user_lines_added": 97,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1738,
+      "agent_lines_removed": 59,
+      "user_added_per_file": {
+        "requirements.txt": 1,
+        "src/api/app.py": 24,
+        "src/shared/models.py": 62,
+        "web/index.html": 10
+      }
+    },
+    {
+      "checkpoint_number": 7,
+      "user_lines_added": 97,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1738,
+      "agent_lines_removed": 59,
+      "user_added_per_file": {
+        "requirements.txt": 1,
+        "src/api/app.py": 24,
+        "src/shared/models.py": 62,
+        "web/index.html": 10
+      }
+    },
+    {
+      "checkpoint_number": 8,
+      "user_lines_added": 97,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1738,
+      "agent_lines_removed": 59,
+      "user_added_per_file": {
+        "requirements.txt": 1,
+        "src/api/app.py": 24,
+        "src/shared/models.py": 62,
+        "web/index.html": 10
+      }
+    },
+    {
+      "checkpoint_number": 9,
+      "user_lines_added": 97,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1738,
+      "agent_lines_removed": 59,
+      "user_added_per_file": {
+        "requirements.txt": 1,
+        "src/api/app.py": 24,
+        "src/shared/models.py": 62,
+        "web/index.html": 10
+      }
+    },
+    {
+      "checkpoint_number": 10,
+      "user_lines_added": 97,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1738,
+      "agent_lines_removed": 59,
+      "user_added_per_file": {
+        "requirements.txt": 1,
+        "src/api/app.py": 24,
+        "src/shared/models.py": 62,
+        "web/index.html": 10
+      }
+    },
+    {
+      "checkpoint_number": 11,
+      "user_lines_added": 109,
+      "user_lines_removed": 2,
+      "agent_lines_added": 1738,
+      "agent_lines_removed": 59,
+      "user_added_per_file": {
+        "requirements.txt": 1,
+        "src/api/app.py": 30,
+        "src/evaluation/evaluator.py": 3,
+        "src/interview/session.py": 3,
+        "src/shared/models.py": 62,
+        "web/index.html": 10
+      },
+      "user_removed_per_file": {
+        "src/interview/session.py": 2
+      }
+    }
+  ]
+}

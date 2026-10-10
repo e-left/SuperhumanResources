@@ -1,0 +1,41 @@
+Add to the spec that: questions will be shared to the interview agent in the following format: there will be 3 questions. Each question has a Question text, Answer text and specialized context. Optionally, it can include one followup (which also has question, answer and context). What do you think about this?
+
+---
+
+Ok. What else do you think you need to implement the interview agent. Interview agent takes as input canidate profile (in the form of a report) + questions (in the form of documents), conducts the interview (voice only) and then produces the entire interview transcript. This will be evaluated separately and clearnly by the evaluation agent afterwards (to separate responsibilities & have clear context)
+
+---
+
+My lazyvim setup does not show gitignored files in the explorer tree, any idea how i change that?
+
+---
+
+did it, thanks! let me plug in the api keys and get back to you
+
+---
+
+Now I want to make the evaluation agent, that will receive the transcript of the interview, + question documents & profile, and produce a report with a hiring score, reasoning + anything else you think is important and needed
+
+---
+
+Now I want to make the evaluation agent, that will receive the transcript of the interview, + question documents & profile, and produce a report with a hiring score, reasoning + anything else you think is important and needed
+
+---
+
+Ok. What is the state of the project? What do I have to do now to test it? Just tell me, dont change anythign
+
+---
+
+did u make a python env? did u use uv?
+
+---
+
+what should i use in GEMINI_MODEL
+
+---
+
+ok, find me the most up to date model i should use. i think 2.5 is a bit too old
+
+---
+
+ok. Is the @.env file ready?
