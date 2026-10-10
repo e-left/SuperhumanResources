@@ -512,22 +512,106 @@ $("copy-button").addEventListener("click", async () => {
   }
 });
 
-$("download-button").addEventListener("click", () => {
-  if (!context) return;
-  const url = URL.createObjectURL(
-    new Blob([JSON.stringify(context, null, 2) + "\n"], {
-      type: "application/json",
-    }),
-  );
+function downloadFile(text, type, filename) {
+  const url = URL.createObjectURL(new Blob([text], { type }));
   const link = el("a");
   link.href = url;
-  link.download = sample
-    ? "sample-context.json"
-    : `context-${context.session_id}.json`;
+  link.download = filename;
   document.body.append(link);
   link.click();
   link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function interviewBrief(data, isSample) {
+  // Quote untrusted generated content so it cannot introduce Markdown headings or HTML.
+  const quote = (text) =>
+    String(text)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .split(/\r?\n/)
+      .map((line) => `> ${line}`)
+      .join("\n");
+  const lines = [
+    "# SuperhumanResources — Interview brief",
+    "",
+    isSample
+      ? "**ILLUSTRATIVE SAMPLE — not a repository analysis.**"
+      : "**Generated from a bounded repository analysis. Review before use.**",
+    "",
+    "**Interviewer only: includes reference answers. Do not share with candidates.**",
+    "",
+    "## Role",
+    "",
+    quote(data.role),
+    "",
+    "## Repository",
+    "",
+    quote(data.repo_url || "Local repository"),
+    "",
+    "## Session",
+    "",
+    quote(data.session_id),
+    "",
+    "## Codebase summary",
+    "",
+    quote(data.summary),
+    "",
+  ];
+  data.questions.forEach((question, index) => {
+    lines.push(
+      `## Question ${index + 1}`,
+      "",
+      quote(question.question),
+      "",
+      "### Reference answer",
+      "",
+      quote(question.answer),
+      "",
+      "### Codebase context",
+      "",
+      quote(question.context),
+      "",
+      "### Source files",
+      "",
+      quote(question.source_files.join("\n")),
+      "",
+    );
+  });
+  lines.push(
+    "## Source coverage",
+    "",
+    "Included files:",
+    "",
+    quote(data.included_files.join("\n")),
+    "",
+    "Omitted files:",
+    "",
+    quote(data.omitted_files.join("\n") || "None reported"),
+    "",
+  );
+  return lines.join("\n");
+}
+
+$("download-button").addEventListener("click", () => {
+  if (!context) return;
+  downloadFile(
+    JSON.stringify(context, null, 2) + "\n",
+    "application/json",
+    sample ? "sample-context.json" : `context-${context.session_id}.json`,
+  );
+});
+
+$("brief-button").addEventListener("click", () => {
+  if (!context) return;
+  downloadFile(
+    interviewBrief(context, sample),
+    "text/markdown;charset=utf-8",
+    sample
+      ? "sample-interview-brief.md"
+      : `interview-brief-${context.session_id}.md`,
+  );
 });
 
 async function restore() {

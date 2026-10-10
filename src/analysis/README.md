@@ -59,7 +59,9 @@ Start `.venv/bin/uvicorn src.api.app:app` and open `http://localhost:8000/`.
 The workspace accepts a public GitHub repository, hiring role, and optional
 project directory. It shows the saved technology map, project areas, three
 questions with reference answers, and included/omitted source files. You can
-export the context as JSON or copy its session ID. The **Explore a sample**
+export the context as JSON, download an interviewer-only Markdown brief (questions,
+reference answers, source context, and coverage), or copy its session ID. Sample
+briefs are explicitly labeled illustrative. The **Explore a sample**
 button shows a labeled illustrative preview without calling Gemini.
 
 `GET /sessions/<session_id>/context` returns the saved `context.json` analysis.
