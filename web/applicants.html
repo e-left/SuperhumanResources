@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#f7f9fd" />
     <title>Applicant's list — SuperhumanResources</title>
     <link rel="stylesheet" href="/static/context.css" />
+    <script src="/static/applicants.js" defer></script>
   </head>
   <body>
     <svg
@@ -78,27 +79,17 @@
       <div class="nav-caption">WORKSPACE</div>
       <nav>
         <a class="nav-link studio-link" href="/"
-          ><svg><use href="#i-grid" /></svg>Context Studio<span
-            class="nav-count"
-            >01</span
-          ></a
+          ><svg><use href="#i-grid" /></svg>Context Studio</a
         >
         <a class="nav-link applicants-link active" href="/applicants" aria-current="page"
           ><svg><use href="#i-users" /></svg>Applicant's list<svg class="nav-external">
             <use href="#i-chevron" /></svg
         ></a>
-        <a class="nav-link" href="/?session=demo"
-          ><svg><use href="#i-mic" /></svg>Voice interview<svg
-            class="nav-external"
-          >
+        <a class="nav-link candidates-link" href="/candidates"
+          ><svg><use href="#i-mic" /></svg>Candidates<svg class="nav-external">
             <use href="#i-chevron" /></svg
-        ></a>
-        <a class="nav-link" href="/internal/report?session=demo"
-          ><svg><use href="#i-report" /></svg>Evaluation report<svg
-            class="nav-external"
-          >
-            <use href="#i-chevron" /></svg
-        ></a>
+          ></a
+        >
       </nav>
       <div class="pipeline-nav">
         <div class="nav-caption">THE AGENT WORKFLOW</div>
@@ -157,16 +148,15 @@
             <div class="heading-icon"><svg><use href="#i-users" /></svg></div>
             <div>
               <h2 id="applicants-title">Meet the applicants</h2>
-              <p>11 applicants · 10 fictional candidates and your profile</p>
+              <p>12 applicants</p>
             </div>
           </div>
-          <p class="applicants-note" id="demo-note">Konstantinos Siskos is included with the supplied email address, GitHub username and LinkedIn profile. All other applicants are invented; their email addresses, GitHub usernames and LinkedIn profiles are placeholders, not verified accounts.</p>
           <div class="applicants-table-wrap" role="region" aria-label="Applicant details" tabindex="0">
-            <table class="applicants-table" aria-describedby="demo-note">
-              <caption class="applicants-caption">Applicant names, email addresses and social profiles</caption>
+            <table class="applicants-table">
               <thead><tr><th scope="col">First name</th><th scope="col">Last name</th><th scope="col">Email</th><th scope="col">GitHub username</th><th scope="col">LinkedIn profile</th></tr></thead>
               <tbody>
                 <tr><td>Konstantinos</td><td>Siskos</td><td class="applicant-profile"><a href="mailto:konstantinos.siscos@gmail.com">konstantinos.siscos@gmail.com</a></td><td class="applicant-handle"><a href="https://github.com/siskos-k" target="_blank" rel="noopener noreferrer">siskos-k ↗</a></td><td class="applicant-profile"><a href="https://www.linkedin.com/in/siskos-k/" target="_blank" rel="noopener noreferrer">linkedin.com/in/siskos-k ↗</a></td></tr>
+                <tr><td>Fotios</td><td>Alexandridis</td><td class="applicant-profile"><a href="mailto:fotios.alexandridis@gmail.com">fotios.alexandridis@gmail.com</a></td><td class="applicant-handle"><a href="https://github.com/e-left" target="_blank" rel="noopener noreferrer">e-left ↗</a></td><td class="applicant-profile"><a href="https://www.linkedin.com/in/fotios-alexandridis-b925b4147/" target="_blank" rel="noopener noreferrer">linkedin.com/in/fotios-alexandridis-b925b4147 ↗</a></td></tr>
                 <tr><td>Mira</td><td>Velloran</td><td class="applicant-profile"><a href="mailto:mira.velloran@example.com">mira.velloran@example.com</a></td><td class="applicant-handle">shr-demo-mira-velloran</td><td class="applicant-profile">linkedin.com/in/shr-demo-mira-velloran</td></tr>
                 <tr><td>Theo</td><td>Norbryn</td><td class="applicant-profile"><a href="mailto:theo.norbryn@example.com">theo.norbryn@example.com</a></td><td class="applicant-handle">shr-demo-theo-norbryn</td><td class="applicant-profile">linkedin.com/in/shr-demo-theo-norbryn</td></tr>
                 <tr><td>Leona</td><td>Ashvex</td><td class="applicant-profile"><a href="mailto:leona.ashvex@example.com">leona.ashvex@example.com</a></td><td class="applicant-handle">shr-demo-leona-ashvex</td><td class="applicant-profile">linkedin.com/in/shr-demo-leona-ashvex</td></tr>

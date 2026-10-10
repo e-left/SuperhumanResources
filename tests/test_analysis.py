@@ -204,3 +204,50 @@ def test_context_route_handles_missing_and_invalid_session_ids(tmp_path, monkeyp
     with TestClient(app) as client:
         assert client.get("/sessions/missing/context").status_code == 404
         assert client.get("/sessions/bad%20id/context").status_code == 404
+
+
+def test_followup_is_written_into_the_question_doc(analysis):
+    analysis.questions[0].followup = {
+        "question": "And how would you verify the fix?",
+        "answer": "Measure the same percentile again under the same load.",
+        "context": "The API has latency-sensitive endpoints.",
+    }
+    analysis = CodebaseAnalysis.model_validate(analysis.model_dump())
+    docs = agent.question_docs(analysis)
+    first = loader.parse_question("q1", docs["q1.md"])
+    assert first.followup.question == "And how would you verify the fix?"
+    assert loader.parse_question("q2", docs["q2.md"]).followup is None
+
+
+def test_candidate_inputs_reach_the_prompt_only_when_given():
+    from src.analysis.prompt import build_prompt
+
+    plain = json.loads(build_prompt({"files": []}, "Engineer"))
+    assert set(plain) == {"target_role", "repository"}
+    tailored = json.loads(build_prompt({"files": []}, "Engineer", "Owns APIs", "Name: Sam"))
+    assert tailored["what_we_are_looking_for"] == "Owns APIs"
+    assert tailored["candidate_profile"] == "Name: Sam"
+
+
+def test_analysis_can_write_into_an_existing_candidate_folder(tmp_path, monkeypatch, analysis):
+    source = tmp_path / "repo"
+    source.mkdir()
+    (source / "app.py").write_text("source")
+    monkeypatch.setattr(loader, "DATA_DIR", tmp_path / "data")
+    session = loader.DATA_DIR / ("a" * 32)
+    session.mkdir(parents=True)
+    (session / "candidate.md").write_text("Name: Sam Rivera")
+    captured = {}
+
+    def fake(bundle, role, looking_for="", candidate_profile=""):
+        captured.update(looking_for=looking_for, candidate_profile=candidate_profile)
+        return analysis
+
+    monkeypatch.setattr(agent, "ask_gemini", fake)
+    result = agent.analyze(source, "Engineer", looking_for="Owns APIs",
+                           candidate_profile="Name: Sam Rivera", session_id="a" * 32)
+    assert result["session_id"] == "a" * 32
+    assert captured == {"looking_for": "Owns APIs", "candidate_profile": "Name: Sam Rivera"}
+    assert (session / "candidate.md").read_text() == "Name: Sam Rivera"  # untouched
+    assert json.loads((session / "context.json").read_text())["looking_for"] == "Owns APIs"
+    assert len(loader.load_session("a" * 32).questions) == 3

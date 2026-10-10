@@ -50,20 +50,26 @@ def test_applicants_page_has_mock_profiles_and_workspace_navigation():
 
     with TestClient(app) as client:
         workspace = client.get("/").text
-        assert workspace.index("Context Studio<span") < workspace.index('href="/applicants"') < workspace.index("Voice interview<svg")
+        # Workspace nav order: Context Studio, Applicant's list, Candidates.
+        assert workspace.index(">Context Studio</a") < workspace.index('href="/applicants"') < workspace.index('href="/candidates"')
         response = client.get("/applicants")
         assert response.status_code == 200
         assert 'href="/applicants" aria-current="page"' in response.text
-        assert "All other applicants are invented" in response.text
         assert 'href="https://github.com/siskos-k"' in response.text
         assert 'href="https://www.linkedin.com/in/siskos-k/"' in response.text
         assert 'href="mailto:konstantinos.siscos@gmail.com"' in response.text
         assert "/static/context.js" not in response.text
+        # The Interview column is added at runtime, so the table above stays as written.
+        assert "/static/applicants.js" in response.text
+        assert client.get("/static/applicants.js").status_code == 200
         table = ApplicantTableParser()
         table.feed(response.text)
-        assert len(table.rows) == 11
+        assert len(table.rows) == 12
         assert table.rows[0] == ["Konstantinos", "Siskos", "konstantinos.siscos@gmail.com", "siskos-k ↗", "linkedin.com/in/siskos-k ↗"]
-        for first, last, email, github, linkedin in table.rows[1:]:
+        assert table.rows[1] == ["Fotios", "Alexandridis", "fotios.alexandridis@gmail.com", "e-left ↗", "linkedin.com/in/fotios-alexandridis-b925b4147 ↗"]
+        assert 'href="https://github.com/e-left"' in response.text
+        assert 'href="https://www.linkedin.com/in/fotios-alexandridis-b925b4147/"' in response.text
+        for first, last, email, github, linkedin in table.rows[2:]:
             assert first and last
             assert email == f"{first.lower()}.{last.lower()}@example.com"
             assert f'href="mailto:{email}"' in response.text

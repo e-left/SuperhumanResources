@@ -63,7 +63,7 @@ def test_recorder_merges_fragments_and_tags_turns(tmp_path):
         rec.add(speaker, text, flow.question_id, flow.in_followup)
 
     say("agent", "Hi Alex,")
-    say("agent", "I'm Harper.")
+    say("agent", "I'm Ada.")
     flow.start_question("q1")
     say("agent", "Question one?")
     say("candidate", "Well,")
@@ -77,7 +77,7 @@ def test_recorder_merges_fragments_and_tags_turns(tmp_path):
 
     turns = [(t.speaker, t.question_id, t.followup, t.text) for t in rec.turns]
     assert turns == [
-        ("agent", None, False, "Hi Alex, I'm Harper."),
+        ("agent", None, False, "Hi Alex, I'm Ada."),
         ("agent", "q1", False, "Question one?"),
         ("candidate", "q1", False, "Well, I think so."),
         ("agent", "q1", True, "And where?"),
@@ -202,5 +202,5 @@ def test_interrupted_turn_keeps_the_full_wording(tmp_path):
 def test_turn_of_which_nothing_was_spoken_is_not_added(tmp_path):
     rec = TranscriptRecorder("s1", "Alex Meier", tmp_path)
     rec.add("candidate", "Hi.", None)
-    rec.mark_interrupted("Hi Alex, I'm Harper. How are you doing today?", "")
+    rec.mark_interrupted("Hi Alex, I'm Ada. How are you doing today?", "")
     assert [t.speaker for t in rec.turns] == ["candidate"]

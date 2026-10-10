@@ -113,6 +113,9 @@ incomplete, say so and say what was missed.
 - strengths: at most two real strengths, or an empty list if there were none.
 - next_interview_focus: empty list.
 
+If an "opening" is given (the role and what the team is looking for), relate \
+the strengths and next_interview_focus to it.
+
 If "borderline" is true, the overall score is close to the bar: say in the \
 summary that the result is close and should be confirmed by a person.
 
@@ -192,6 +195,7 @@ def build_writeup_prompt(
     ended_reason: str | None,
     red_flags: list[str],
     borderline: bool = False,
+    opening: dict | None = None,
 ) -> str:
     questions = []
     for q in per_question:
@@ -229,4 +233,6 @@ def build_writeup_prompt(
         "red_flags": red_flags,
         "questions": questions,
     }
+    if opening:
+        payload["opening"] = opening
     return json.dumps(payload, indent=2)

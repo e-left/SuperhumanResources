@@ -1399,6 +1399,107 @@ form label[for="subdir"] {
     opacity: 0.3;
   }
 }
+/* Status pills, shared by the Candidates page and the Applicant's list. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 9px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  border: 1px solid #d6e3f6;
+  color: #57749b;
+  border-radius: 3px;
+  padding: 4px 8px;
+  white-space: nowrap;
+  width: fit-content;
+}
+.pill .status-dot {
+  background: currentColor;
+}
+.pill.advance {
+  color: #17804d;
+  border-color: #bfe3cf;
+  background: #f1faf5;
+}
+.pill.reject,
+.pill.failed {
+  color: #b23a33;
+  border-color: #f0cdca;
+  background: #fff6f5;
+}
+.pill.in_progress,
+.pill.preparing {
+  color: var(--accent);
+  border-color: #c6dbfa;
+  background: #f1f6ff;
+}
+.pill.in_progress .status-dot,
+.pill.preparing .status-dot {
+  animation: blink 1.2s infinite;
+}
+.applicant-interview {
+  white-space: nowrap;
+}
+.applicant-interview .pill {
+  margin-right: 10px;
+  vertical-align: middle;
+}
+.applicant-action {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+}
+.applicant-action:hover {
+  text-decoration: underline;
+}
+/* Candidate intake: additions to the setup form, in the same field style. */
+.field-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+form label.spaced {
+  margin-top: 21px;
+}
+textarea {
+  font: inherit;
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #203657;
+  outline: none;
+  font-size: 11px;
+  line-height: 1.6;
+  resize: vertical;
+  padding: 11px 0;
+}
+textarea::placeholder {
+  color: #8391a6;
+}
+.textarea-wrap {
+  height: auto;
+  align-items: flex-start;
+}
+.file-wrap input[type="file"] {
+  font-size: 10px;
+  color: #53759f;
+}
+.file-wrap input[type="file"]::file-selector-button {
+  font: inherit;
+  font-weight: 600;
+  margin-right: 10px;
+  padding: 5px 10px;
+  border: 1px solid #d7e1ef;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #203a61;
+  cursor: pointer;
+}
+.handoff .button + .button {
+  margin-left: -4px;
+}
 @media (min-width: 1600px) {
   main {
     padding-top: 55px;
@@ -1488,7 +1589,7 @@ form label[for="subdir"] {
   }
   .workspace-label,
   .nav-caption,
-  .nav-link:not(.active):not(.applicants-link):not(.studio-link),
+  .nav-link:not(.active):not(.applicants-link):not(.candidates-link):not(.studio-link),
   .nav-link .nav-count,
   .nav-link .nav-external,
   .pipeline-nav,
@@ -1497,6 +1598,7 @@ form label[for="subdir"] {
   }
   .nav-link.active,
   .nav-link.applicants-link,
+  .nav-link.candidates-link,
   .nav-link.studio-link {
     font-size: 0;
     padding: 13px;
@@ -1505,6 +1607,7 @@ form label[for="subdir"] {
   }
   .nav-link.active svg,
   .nav-link.applicants-link svg,
+  .nav-link.candidates-link svg,
   .nav-link.studio-link svg {
     width: 20px;
     height: 20px;
@@ -1554,6 +1657,7 @@ form label[for="subdir"] {
   }
   .nav-link.active,
   .nav-link.applicants-link,
+  .nav-link.candidates-link,
   .nav-link.studio-link {
     margin: 0;
     padding: 8px 10px;
@@ -1561,6 +1665,7 @@ form label[for="subdir"] {
   }
   .nav-link.active svg,
   .nav-link.applicants-link svg,
+  .nav-link.candidates-link svg,
   .nav-link.studio-link svg {
     width: 14px;
     height: 14px;
@@ -1727,6 +1832,7 @@ form label[for="subdir"] {
 @media (max-width: 420px) {
   .nav-link.active,
   .nav-link.applicants-link,
+  .nav-link.candidates-link,
   .nav-link.studio-link {
     font-size: 0;
     gap: 0;
