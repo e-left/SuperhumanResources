@@ -3,7 +3,7 @@
   "checkpoint_id": "01M4JX0WJT6JHJWXJNYYQTHDA1",
   "strategy": "manual-commit",
   "branch": "feat/codebase-context-ui",
-  "checkpoints_count": 2,
+  "checkpoints_count": 4,
   "files_touched": [
     "CONTEXT.md",
     "src/analysis/README.md",
@@ -22,14 +22,21 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 126778,
+    "input_tokens": 154416,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 3653632,
-    "output_tokens": 27205,
-    "api_call_count": 47,
+    "cache_read_tokens": 3778176,
+    "output_tokens": 27905,
+    "api_call_count": 53,
     "subagent_tokens_complete": true
   }
 }

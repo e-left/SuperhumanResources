@@ -1,0 +1,76 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4JX0WJT6JHJWXJNYYQTHDA1",
+  "session_id": "01a125a3-bd00-79a2-953a-285f0060f03c",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T12:36:21.569228Z",
+  "branch": "feat/codebase-context-ui",
+  "checkpoints_count": 2,
+  "save_step_count": 2,
+  "files_touched": [
+    "CONTEXT.md",
+    "src/analysis/README.md",
+    "src/analysis/agent.py",
+    "src/analysis/routes.py",
+    "src/api/app.py",
+    "tests/test_analysis.py"
+  ],
+  "agent": "Codex",
+  "model": "gpt-6.1-sol",
+  "turn_id": "b865ee4dbb92",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 27638,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 124544,
+    "output_tokens": 700,
+    "api_call_count": 6,
+    "subagent_tokens_complete": true
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-10T12:36:21.562115Z",
+    "agent_lines": 70,
+    "agent_removed": 7,
+    "human_added": 2283,
+    "human_modified": 1,
+    "human_removed": 0,
+    "total_committed": 2354,
+    "total_lines_changed": 2361,
+    "agent_percentage": 3.2613299449385855,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 489,
+      "user_lines_removed": 1,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".codex/hooks.json": 88,
+        "src/analysis/agent.py": 10,
+        "src/analysis/routes.py": 10,
+        "src/api/app.py": 7,
+        "web/context.css": 14,
+        "web/context.html": 71,
+        "web/context.js": 289
+      },
+      "user_removed_per_file": {
+        "src/api/app.py": 1
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 88,
+      "user_lines_removed": 0,
+      "agent_lines_added": 2739,
+      "agent_lines_removed": 8,
+      "user_added_per_file": {
+        ".codex/hooks.json": 88
+      }
+    }
+  ]
+}
