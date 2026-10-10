@@ -244,37 +244,84 @@
                 ><span class="status-dot"></span>Ready when you are</span
               >
             </div>
-            <div class="constellation" aria-hidden="true">
-              <div class="orbit orbit-outer"></div>
-              <div class="orbit orbit-middle"></div>
-              <div class="orbit orbit-inner"></div>
-              <div class="crosshair horizontal"></div>
-              <div class="crosshair vertical"></div>
-              <div class="orbit-traveler"><span></span></div>
-              <svg class="cape-flow" viewBox="0 0 460 180" aria-hidden="true">
+            <div class="agent-workspace" aria-hidden="true">
+              <div class="document-back document-back-one"></div>
+              <div class="document-back document-back-two"></div>
+              <svg class="context-connection" viewBox="0 0 500 300">
                 <path
-                  fill="#0866ff"
-                  d="M0 63C70-15 115 28 174 63s88 44 144 11 87-36 142-1v39c-74-37-94-2-156 8S211 72 156 92 61 53 0 63Z"
+                  class="connection-track"
+                  d="M240 85H382Q400 85 400 103V150"
                 />
                 <path
-                  fill="#0866ff"
-                  opacity=".55"
-                  d="M47 86c59 9 83 64 142 36s92 17 137 14 86-42 128-15c-63-8-76 47-144 48s-88-43-137-24S94 142 47 86Z"
+                  class="connection-signal"
+                  d="M240 85H382Q400 85 400 103V150"
                 />
               </svg>
-              <div class="orbit-core">
-                <img src="/static/brand-reference.png" alt="" />
+              <div class="source-document">
+                <div class="document-caption">01 / THE INPUT</div>
+                <div class="document-title">
+                  <svg><use href="#i-git" /></svg>Repository
+                </div>
+                <div class="source-row">
+                  <svg><use href="#i-code" /></svg><span>Source files</span
+                  ><i></i>
+                </div>
+                <div class="source-row">
+                  <svg><use href="#i-grid" /></svg><span>Dependencies</span
+                  ><i></i>
+                </div>
+                <div class="source-row">
+                  <svg><use href="#i-file" /></svg><span>Documentation</span
+                  ><i></i>
+                </div>
+                <div class="document-code">
+                  <span></span><span></span><span></span>
+                </div>
               </div>
-              <span class="node-chip node-code"
-                ><svg><use href="#i-code" /></svg>source code</span
-              ><span class="node-chip node-context"
-                ><svg><use href="#i-grid" /></svg>project context</span
-              ><span class="node-chip node-questions"
-                ><svg><use href="#i-mic" /></svg>better questions</span
-              ><span class="orbit-dot dot-one"></span
-              ><span class="orbit-dot dot-two"></span
-              ><span class="coordinate coord-one">INPUT / REPOSITORY</span
-              ><span class="coordinate coord-two">OUTPUT / INTELLIGENCE</span>
+              <div class="context-document">
+                <div class="agent-mascot">
+                  <img src="/static/brand-reference.png" alt="" />
+                </div>
+                <div class="document-caption">02 / THE UNDERSTANDING</div>
+                <div class="document-title">
+                  Context brief<span class="brief-mark"
+                    ><svg><use href="#i-spark" /></svg
+                  ></span>
+                </div>
+                <div class="brief-row">
+                  <span class="brief-icon"
+                    ><svg><use href="#i-code" /></svg></span
+                  ><span
+                    >Technology map<small
+                      >What your team builds with</small
+                    ></span
+                  ><svg><use href="#i-check" /></svg>
+                </div>
+                <div class="brief-row">
+                  <span class="brief-icon"
+                    ><svg><use href="#i-grid" /></svg></span
+                  ><span
+                    >Project intelligence<small
+                      >Patterns, trade-offs, opportunities</small
+                    ></span
+                  ><svg><use href="#i-check" /></svg>
+                </div>
+                <div class="brief-row">
+                  <span class="brief-icon"
+                    ><svg><use href="#i-mic" /></svg></span
+                  ><span
+                    >Interview questions<small
+                      >Three questions. Real context.</small
+                    ></span
+                  ><svg><use href="#i-check" /></svg>
+                </div>
+                <div class="brief-footer">
+                  <svg><use href="#i-git" /></svg>Connected to your codebase
+                </div>
+              </div>
+              <span class="workspace-caption"
+                >SOURCE MATERIAL → SHARED INTELLIGENCE</span
+              >
             </div>
             <div class="agent-copy">
               <h2 id="agent-title">From source to signal.</h2>
